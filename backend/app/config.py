@@ -7,12 +7,10 @@ load_dotenv()
 MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "quadmedic")
 
-# Hugging Face Access Token
+# Google Gemini API Key (primary AI engine replacing Hugging Face/OpenRouter)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 os.environ["HF_TOKEN"] = HF_TOKEN
-
-# Google Gemini API Key (resolves reliably from Cloud Run)
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # Firebase Config (provided in screenshot/specification)
 FIREBASE_API_KEY = os.getenv("FIREBASE_API_KEY", "")

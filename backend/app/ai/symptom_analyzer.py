@@ -91,27 +91,32 @@ Respond with this exact JSON structure:
                         raw_text = raw_text[:-3].strip()
                 return json.loads(raw_text)
     
-    # Fallback: API key method
+    # Try API key method (primary)
     if GEMINI_API_KEY:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+        models = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"]
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"maxOutputTokens": 400, "temperature": 0.3, "topP": 0.9}
         }
-        res = requests.post(url, headers=headers, json=payload, timeout=15)
-        res.raise_for_status()
-        data = res.json()
-        candidates = data.get("candidates", [])
-        if candidates:
-            parts = candidates[0].get("content", {}).get("parts", [])
-            if parts:
-                raw_text = parts[0].get("text", "").strip()
-                if raw_text.startswith("```"):
-                    raw_text = raw_text.split("\n", 1)[-1]
-                    if raw_text.endswith("```"):
-                        raw_text = raw_text[:-3].strip()
-                return json.loads(raw_text)
+        for model_name in models:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={GEMINI_API_KEY}"
+                res = requests.post(url, headers=headers, json=payload, timeout=12)
+                if res.status_code == 200:
+                    data = res.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            raw_text = parts[0].get("text", "").strip()
+                            if raw_text.startswith("```"):
+                                raw_text = raw_text.split("\n", 1)[-1]
+                                if raw_text.endswith("```"):
+                                    raw_text = raw_text[:-3].strip()
+                            return json.loads(raw_text)
+            except Exception as e:
+                logger.warning(f"Gemini model {model_name} classification error: {e}")
     
     raise ValueError("No Gemini endpoint available")
 

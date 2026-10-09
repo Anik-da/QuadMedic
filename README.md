@@ -27,7 +27,7 @@ QuadMedic is an advanced, industry-grade smart healthcare desktop application an
 - **Backend**: Python FastAPI, Uvicorn, Pydantic.
 - **Database**: MongoDB Atlas (includes in-memory fallback database driver for instant offline execution).
 - **Cloud**: Firebase Auth & Storage integration.
-- **AI Models**: Hugging Face `transformers` (BART, DialoGPT, TrOCR, Flan-T5, SpeechT5), `sentence-transformers` (all-MiniLM-L6-v2), and OpenAI `whisper-small`.
+- **AI Models**: Google Gemini API (`gemini-3.1-flash-lite`, `gemini-3.8-flash`) for clinical triage, conversational health copilot, and smart diagnosis.
 
 ---
 
@@ -64,8 +64,8 @@ cp .env.example .env
 Define the following variables in your `.env` file:
 *   `MONGODB_URI`: Your MongoDB Atlas connection string (or local fallback).
 *   `DATABASE_NAME`: Database name (e.g. `quadmedic`).
-*   `HF_TOKEN`: Hugging Face Access Token for AI models.
-*   `GEMINI_API_KEY`: Google Gemini API key.
+*   `GEMINI_API_KEY`: Google Gemini API key (preconfigured with latest flash model).
+*   `GEMINI_MODEL`: Gemini model version (defaults to `gemini-3.1-flash-lite` / `gemini-3.8-flash`).
 *   `FIREBASE_API_KEY` (and other Firebase parameters): Credentials to access Firebase Authentication and Storage.
 *   `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, `EMAILJS_USER_ID`, `EMAILJS_ACCESS_TOKEN`: Configuration to send critical alerts via EmailJS.
 

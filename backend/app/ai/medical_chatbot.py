@@ -79,50 +79,59 @@ def call_vertex_gemini(prompt: str) -> str:
 
 
 def call_gemini_api_key(prompt: str) -> str:
-    """Fallback: Call Gemini via API key (Google AI Studio)."""
+    """Call Google Gemini via API key (Google AI Studio / Generative Language API)."""
     if not GEMINI_API_KEY:
         raise ValueError("No GEMINI_API_KEY configured")
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    models = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-2.5-flash-lite", "gemini-flash-latest"]
     headers = {"Content-Type": "application/json"}
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "maxOutputTokens": 200,
+            "maxOutputTokens": 300,
             "temperature": 0.7,
             "topP": 0.95
         }
     }
     
-    res = requests.post(url, headers=headers, json=payload, timeout=15)
-    res.raise_for_status()
-    data = res.json()
-    
-    candidates = data.get("candidates", [])
-    if candidates:
-        parts = candidates[0].get("content", {}).get("parts", [])
-        if parts:
-            return parts[0].get("text", "").strip()
+    for model in models:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
+            res = requests.post(url, headers=headers, json=payload, timeout=12)
+            if res.status_code == 200:
+                data = res.json()
+                candidates = data.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        text = parts[0].get("text", "").strip()
+                        if text:
+                            return text
+            else:
+                logger.warning(f"Gemini model {model} returned status {res.status_code}")
+        except Exception as e:
+            logger.warning(f"Error calling Gemini model {model}: {e}")
+            
     return ""
 
 
 def call_gemini(prompt: str) -> str:
-    """Try Vertex AI first (Cloud Run), then API key fallback."""
-    # Try Vertex AI (uses service account, works on Cloud Run)
-    try:
-        result = call_vertex_gemini(prompt)
-        if result:
-            return result
-    except Exception as e:
-        logger.warning(f"Vertex AI call failed: {e}")
-    
-    # Try API key method
+    """Try configured API key first, then Vertex AI fallback."""
+    # Try API key method (primary)
     try:
         result = call_gemini_api_key(prompt)
         if result:
             return result
     except Exception as e:
         logger.warning(f"API key Gemini call failed: {e}")
+
+    # Try Vertex AI (uses service account on Cloud Run)
+    try:
+        result = call_vertex_gemini(prompt)
+        if result:
+            return result
+    except Exception as e:
+        logger.warning(f"Vertex AI call failed: {e}")
     
     return ""
 
@@ -182,23 +191,8 @@ def generate_chat_response(user_message: str, history: list[dict] = None) -> str
         "Be warm, empathetic, and specific in your advice."
     )
 
-    # 1. Attempt calling Hugging Face Router
+    # 1. Primary: Google Gemini AI
     try:
-        messages = [{"role": "system", "content": system_prompt}]
-        for turn in history[-3:]:
-            role = "assistant" if turn.get("role") != "user" else "user"
-            messages.append({"role": role, "content": turn.get("content", "")})
-        messages.append({"role": "user", "content": user_message})
-        
-        response = call_huggingface_chat(messages)
-        if response:
-            return response
-    except Exception as e:
-        logger.error(f"Error calling Hugging Face chat: {e}")
-
-    # 2. Fallback: Attempt calling Google Gemini API
-    try:
-        # Build conversation context for Gemini legacy format
         context = f"System Instructions: {system_prompt}\n\n"
         for turn in history[-3:]:
             role = turn.get("role")
@@ -212,9 +206,22 @@ def generate_chat_response(user_message: str, history: list[dict] = None) -> str
         response = call_gemini(context)
         if response:
             return response
-            
     except Exception as e:
-        logger.error(f"Error calling Gemini fallback: {e}")
+        logger.error(f"Error calling Google Gemini AI: {e}")
+
+    # 2. Secondary: Hugging Face Router Fallback
+    try:
+        messages = [{"role": "system", "content": system_prompt}]
+        for turn in history[-3:]:
+            role = "assistant" if turn.get("role") != "user" else "user"
+            messages.append({"role": role, "content": turn.get("content", "")})
+        messages.append({"role": "user", "content": user_message})
+        
+        response = call_huggingface_chat(messages)
+        if response:
+            return response
+    except Exception as e:
+        logger.error(f"Error calling Hugging Face chat: {e}")
 
     # 3. Fallback: Keyword matcher
     for entry in MEDICAL_RESPONSES:
