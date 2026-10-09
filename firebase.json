@@ -1,0 +1,59 @@
+{
+  "hosting": {
+    "site": "quad-medic",
+    "public": "public",
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/auth/**",
+        "run": {
+          "serviceId": "quad-medic-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/students/**",
+        "run": {
+          "serviceId": "quad-medic-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/ai/**",
+        "run": {
+          "serviceId": "quad-medic-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/appointments/**",
+        "run": {
+          "serviceId": "quad-medic-backend",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/analytics/**",
+        "run": {
+          "serviceId": "quad-medic-backend",
+          "region": "us-central1"
+        }
+      }
+    ]
+  }
+}

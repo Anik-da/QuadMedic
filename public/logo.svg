@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Shield body -->
+  <path d="M32 4 L8 16 L8 34 C8 48 20 58 32 62 C44 58 56 48 56 34 L56 16 Z" 
+        fill="url(#shieldGrad)" stroke="#1565C0" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Heart shape inside shield -->
+  <path d="M32 46 C24 40 16 34 16 27 C16 22 20 18 25 18 C28 18 30 20 32 22 C34 20 36 18 39 18 C44 18 48 22 48 27 C48 34 40 40 32 46Z" 
+        fill="url(#heartGrad)" opacity="0.35"/>
+  <!-- Heartbeat line -->
+  <polyline points="14,32 22,32 26,24 30,40 34,28 38,36 42,32 50,32" 
+            stroke="#1E88E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Medical cross on top -->
+  <rect x="28" y="2" width="8" height="14" rx="2" fill="#1565C0"/>
+  <rect x="25" y="5" width="14" height="8" rx="2" fill="#1565C0"/>
+  <!-- Inner white cross -->
+  <rect x="30" y="4" width="4" height="10" rx="1" fill="white"/>
+  <rect x="27" y="7" width="10" height="4" rx="1" fill="white"/>
+  <defs>
+    <linearGradient id="shieldGrad" x1="8" y1="4" x2="56" y2="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#42A5F5"/>
+      <stop offset="100%" stop-color="#1565C0"/>
+    </linearGradient>
+    <linearGradient id="heartGrad" x1="16" y1="18" x2="48" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#90CAF9"/>
+      <stop offset="100%" stop-color="#42A5F5"/>
+    </linearGradient>
+  </defs>
+</svg>

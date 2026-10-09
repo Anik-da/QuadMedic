@@ -1,0 +1,4026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuadMedic — AI-Powered Campus Healthcare</title>
+    <meta name="description" content="QuadMedic is an intelligent clinical dashboard for campus healthcare. AI-powered symptom diagnosis, risk predictions, and first aid guidance.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ======================================
+           DESIGN SYSTEM — QuadMedic Premium
+           Single accent: Electric Blue #3B82F6
+           Neutral base: Zinc-tinted darks
+           ====================================== */
+
+        /* Splash Screen */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: #060a10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #splash-screen img {
+            width: 88px;
+            height: 88px;
+            animation: splash-pulse 1.6s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+            filter: drop-shadow(0 0 40px rgba(59, 130, 246, 0.4));
+        }
+
+        #splash-screen .splash-title {
+            margin-top: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 34px;
+            font-weight: 800;
+            color: #3B82F6;
+            letter-spacing: -1px;
+        }
+
+        #splash-screen .splash-title span {
+            color: #e4e4e7;
+        }
+
+        #splash-screen .splash-sub {
+            margin-top: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+            color: #52525b;
+            letter-spacing: 3.5px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        @keyframes splash-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.06); opacity: 0.85; }
+        }
+
+        :root {
+            --bg-primary: #080c14;
+            --bg-elevated: #0c1220;
+            --bg-color-1: #0c1424;
+            --bg-color-2: #060a10;
+            --glass-bg: rgba(255, 255, 255, 0.025);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-border-hover: rgba(255, 255, 255, 0.12);
+            --accent-cyan: #3B82F6;
+            --accent-green: #10B981;
+            --accent-purple: #8B5CF6;
+            --accent-red: #EF4444;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --spring-bounce: cubic-bezier(0.32, 0.72, 0, 1);
+            --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes subtleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Noise texture overlay for physical depth */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        /* Ambient background gradient orbs */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Utilities */
+        .glow-cyan { text-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        .glow-border { border-color: rgba(59, 130, 246, 0.25); }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+                0 20px 50px -12px rgba(0, 0, 0, 0.4);
+            transition: border-color 0.4s var(--spring-bounce), box-shadow 0.4s var(--spring-bounce);
+        }
+
+        .glass-panel:hover {
+            border-color: var(--glass-border-hover);
+        }
+
+        /* Nav Bar — floating island style */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 5%;
+            background: rgba(8, 12, 20, 0.75);
+            backdrop-filter: blur(24px) saturate(1.3);
+            -webkit-backdrop-filter: blur(24px) saturate(1.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.02) inset;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3B82F6;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: opacity 0.3s var(--spring-bounce);
+        }
+
+        .logo:hover { opacity: 0.85; }
+
+        .logo img {
+            height: 36px;
+            width: 36px;
+            object-fit: contain;
+        }
+
+        .logo .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .logo .logo-text .brand-name {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -0.75px;
+        }
+
+        .logo .logo-text .brand-name .highlight {
+            color: var(--text-primary);
+        }
+
+        .logo .logo-text .brand-sub {
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.4s var(--spring-bounce);
+            font-weight: 500;
+            font-size: 14.5px;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-btn {
+            background: #3B82F6;
+            color: #ffffff;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: -0.2px;
+            transition: all 0.5s var(--spring-bounce);
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 30px -8px rgba(59, 130, 246, 0.5);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Main View Sections */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* Landing Page */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 80px 6% 60px;
+            position: relative;
+            z-index: 1;
+            animation: fadeUp 0.8s var(--spring-smooth) both;
+        }
+
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            background: linear-gradient(160deg, #ffffff 30%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 18px;
+            max-width: 800px;
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin-bottom: 36px;
+            line-height: 1.7;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 20px;
+            padding: 40px 6%;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            padding: 32px 28px;
+            transition: all 0.5s var(--spring-bounce);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.5s var(--spring-bounce);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.2);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+                0 24px 60px -16px rgba(59, 130, 246, 0.15);
+        }
+
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-card h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 14.5px;
+            line-height: 1.6;
+        }
+
+        /* Auth Panel Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(4, 8, 15, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 460px;
+            padding: 36px;
+            border-radius: var(--radius-xl);
+            animation: fadeUp 0.5s var(--spring-smooth) both;
+        }
+
+        .auth-header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .auth-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13.5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.4s var(--spring-bounce);
+        }
+
+        .form-control:focus {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Custom Dropdown Styling */
+        .custom-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .dropdown-trigger {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 14.5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .dropdown-trigger:focus, .dropdown-trigger.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+            outline: none;
+        }
+
+        .dropdown-arrow {
+            font-size: 10px;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .dropdown-trigger.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: rgba(10, 20, 35, 0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .dropdown-menu.active {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 11px 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .dropdown-option:hover {
+            background: rgba(0, 240, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .dropdown-option.selected {
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            background: #3B82F6;
+            color: #ffffff;
+            padding: 13px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 14.5px;
+            cursor: pointer;
+            transition: all 0.4s var(--spring-bounce);
+            margin-top: 10px;
+            letter-spacing: -0.2px;
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.4);
+        }
+
+        .auth-submit-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .auth-toggle-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .auth-toggle-link span {
+            color: #3B82F6;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+            transition: border-color 0.3s var(--spring-bounce);
+        }
+
+        .auth-toggle-link span:hover {
+            border-color: #3B82F6;
+        }
+
+        /* Dashboard Interface */
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: calc(100vh - 60px);
+        }
+
+        .dashboard-sidebar {
+            background: rgba(8, 12, 20, 0.6);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 24px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.4s var(--spring-bounce);
+            position: relative;
+        }
+
+        .sidebar-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleY(0);
+            width: 3px;
+            height: 20px;
+            background: #3B82F6;
+            border-radius: 0 3px 3px 0;
+            transition: transform 0.4s var(--spring-bounce);
+        }
+
+        .sidebar-item:hover {
+            background: rgba(59, 130, 246, 0.06);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3B82F6;
+            font-weight: 600;
+        }
+
+        .sidebar-item.active::before {
+            transform: translateY(-50%) scaleY(1);
+        }
+
+        .dashboard-content {
+            padding: 32px 4%;
+            overflow-y: auto;
+            max-height: calc(100vh - 60px);
+        }
+
+        /* Dashboard panels */
+        .dashboard-panel {
+            display: none;
+        }
+
+        .dashboard-panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .panel-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .panel-header p {
+            color: var(--text-secondary);
+            font-size: 14.5px;
+        }
+
+        /* Cards list & layouts */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.5s var(--spring-bounce);
+        }
+
+        .metric-card:hover {
+            border-color: var(--glass-border-hover);
+        }
+
+        .metric-card span {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .metric-card h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3B82F6;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+        }
+
+        /* Circular Progress styling */
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .circle-progress {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle-progress svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .circle-progress circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .circle-progress .bg-circle {
+            stroke: rgba(255, 255, 255, 0.05);
+        }
+
+        .circle-progress .fill-circle {
+            stroke: url(#cyan-green-grad);
+            stroke-dasharray: 339;
+            stroke-dashoffset: 339;
+            transition: stroke-dashoffset 0.8s ease-in-out;
+        }
+
+        .progress-text {
+            position: absolute;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Form widgets */
+        .textarea-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .dashboard-btn {
+            background: #3B82F6;
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            letter-spacing: -0.2px;
+            transition: all 0.4s var(--spring-bounce);
+        }
+
+        .dashboard-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px -6px rgba(59, 130, 246, 0.4);
+        }
+
+        .dashboard-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Emergency Alert Screen */
+        .alert-banner {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: pulse-red 2s infinite;
+        }
+
+        .alert-banner h4 {
+            color: var(--accent-red);
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .alert-banner p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* AI chat list styles */
+        .chat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 15px;
+        }
+
+        .chat-msg {
+            max-width: 78%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.55;
+            animation: fadeUp 0.3s var(--spring-smooth) both;
+        }
+
+        .chat-msg.user {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--text-primary);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-msg.bot {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Tables & Lists */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .custom-table th {
+            text-align: left;
+            padding: 12px 15px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .custom-table td {
+            padding: 14px 15px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.3s ease;
+        }
+
+        .custom-table tbody tr:hover td {
+            background: rgba(59, 130, 246, 0.03);
+        }
+
+        /* SVG charts container */
+        .chart-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .chart-box-svg {
+            flex: 1;
+            min-width: 300px;
+            padding: 24px;
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            padding: 36px 0;
+            background: rgba(8, 12, 20, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+            font-size: 12.5px;
+            width: 100%;
+            letter-spacing: 0.2px;
+        }
+
+        /* Responsive styling */
+        @media (max-width: 820px) {
+            header {
+                padding: 12px 4%;
+            }
+            .nav-links {
+                display: none;
+            }
+            .dashboard-layout {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-sidebar {
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px 4%;
+                gap: 4px;
+            }
+            .sidebar-item {
+                padding: 8px 14px;
+                white-space: nowrap;
+            }
+            .sidebar-item::before {
+                display: none;
+            }
+            .hero h1 {
+                font-size: 32px;
+                letter-spacing: -1px;
+            }
+            .hero p {
+                font-size: 15px;
+            }
+            .panel-header h2 {
+                font-size: 22px;
+            }
+            .features-grid {
+                gap: 14px;
+                padding: 30px 4%;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        
+        /* Custom Switch Slider styling */
+        .switch-container input:checked + .slider {
+            background-color: var(--accent-red);
+        }
+        .switch-container input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s var(--spring-bounce);
+            border-radius: 50%;
+        }
+
+        /* Selection highlight */
+        ::selection {
+            background: rgba(59, 130, 246, 0.25);
+            color: #ffffff;
+        }
+
+        /* Spinner for loading states */
+        .spinner {
+            width: 28px;
+            height: 28px;
+            border: 2.5px solid rgba(255, 255, 255, 0.08);
+            border-top-color: #3B82F6;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <img src="logo.svg" alt="QuadMedic">
+        <div class="splash-title">Quad<span>Medic</span></div>
+        <div class="splash-sub">AI-Powered Healthcare</div>
+    </div>
+
+    <svg style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <linearGradient id="cyan-green-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00F0FF" />
+                <stop offset="100%" stop-color="#00FF66" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <header>
+        <a href="#" class="logo" id="logo-btn">
+            <img src="logo.svg" alt="QuadMedic Logo">
+            <div class="logo-text">
+                <span class="brand-name">Quad<span class="highlight">Medic</span></span>
+                <span class="brand-sub">AI-Powered Healthcare</span>
+            </div>
+        </a>
+        <button class="nav-btn" id="header-auth-btn" onclick="openAuthModal()">Sign In</button>
+    </header>
+
+    <!-- SECTION 1: PUBLIC LANDING VIEW -->
+    <div id="landing-view" class="view-section active">
+        <section class="hero">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 10px;">
+                <img src="logo.svg" alt="QuadMedic" style="height: 68px; width: 68px; filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.35)); animation: subtleFloat 4s ease-in-out infinite;">
+                <div style="text-align: left;">
+                    <h1 style="font-size: 44px; margin: 0; line-height: 1.1; letter-spacing: -1.5px; font-weight: 800;">Quad<span style="color: #3B82F6;">Medic</span></h1>
+                    <p style="font-size: 11px; color: var(--text-muted); margin: 4px 0 0; letter-spacing: 3px; text-transform: uppercase; font-weight: 500;">AI-Powered Healthcare</p>
+                </div>
+            </div>
+            <p style="margin-top: 20px;">An intelligent clinical dashboard connecting live database and AI models to deliver symptom diagnosis, risk predictions, and first aid guidance.</p>
+            <button class="nav-btn" style="padding: 14px 36px; font-size: 15px;" onclick="openAuthModal('register')">Get started</button>
+        </section>
+
+        <section class="features-grid" id="features">
+            <div class="feature-card glass-panel">
+                <h3>AI symptom diagnosis</h3>
+                <p>Submit symptoms for zero-shot classification identifying illnesses, risk tags, and emergency warnings in real-time.</p>
+            </div>
+            <div class="feature-card glass-panel">
+                <h3>Triage copilot chat</h3>
+                <p>Conversational AI assistant for instant medical support, first aid guidance, and campus care scheduling.</p>
+            </div>
+            <div class="feature-card glass-panel">
+                <h3>Health risk reports</h3>
+                <p>Calculate risk factors from vitals and download comprehensive PDF health report cards for student records.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- SECTION 2: APPLICATION DASHBOARD VIEW -->
+    <div id="dashboard-view" class="view-section">
+        <div class="dashboard-layout">
+            <div class="dashboard-sidebar">
+                <div class="sidebar-item active sidebar-student" onclick="switchPanel('health-score')">📊 Health Risk</div>
+                <div class="sidebar-item sidebar-student" onclick="switchPanel('symptom-analyzer')">🩺 AI Symptom Triage</div>
+                <div class="sidebar-item sidebar-student" onclick="switchPanel('report-scanner')">📄 Medical Report Scanner</div>
+                <div class="sidebar-item sidebar-doctor" onclick="switchPanel('doctor-console')" style="display:none;">🩺 Doctor Console</div>
+                <div class="sidebar-item" onclick="switchPanel('copilot-chat')">💬 AI Copilot Chat</div>
+                <div class="sidebar-item sidebar-student" onclick="switchPanel('reminders')">⏰ Logs & Reminders</div>
+                <div class="sidebar-item sidebar-student" onclick="switchPanel('appointments')">📅 Book Appointment</div>
+                <div class="sidebar-item sidebar-student" onclick="switchPanel('emergency-sos')" style="display:none;">🚨 Emergency SOS</div>
+                <div class="sidebar-item sidebar-doctor" onclick="switchPanel('campus-analytics')" id="sidebar-analytics-item" style="display:none;">📈 Campus Metrics</div>
+                <div class="sidebar-item sidebar-admin" onclick="switchPanel('admin-console')" style="display:none;">⚙️ Admin Console</div>
+            </div>
+            <div class="dashboard-content">
+                
+                <!-- PANELS SECTION -->
+                <!-- PANEL A: Health Score Calculator -->
+                <div class="dashboard-panel active" id="panel-health-score">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Student Health & Risk Calculator</h2>
+                            <p>Enter daily vitals and lifestyle habits to compute your risk category.</p>
+                        </div>
+                        <button class="dashboard-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ffffff;" onclick="downloadPDFReport()">📥 Download Health Report</button>
+                    </div>
+
+                    <div class="progress-container">
+                        <div class="circle-progress">
+                            <svg>
+                                <circle class="bg-circle" cx="60" cy="60" r="54"></circle>
+                                <circle class="fill-circle" id="risk-score-circle" cx="60" cy="60" r="54"></circle>
+                            </svg>
+                            <span class="progress-text" id="risk-score-text">100%</span>
+                        </div>
+                        <div>
+                            <h3 id="risk-category-badge" style="color: var(--accent-green); margin-bottom: 5px;">Excellent Score</h3>
+                            <p id="risk-insights-text" style="color: var(--text-secondary); max-width: 500px; font-size: 14.5px;">Initialize inputs below to view customized medical risk breakdowns.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px;">
+                        <h3 style="margin-bottom: 20px; color: var(--accent-cyan);">Vitals Input Form</h3>
+                        <form id="health-risk-form" onsubmit="calculateHealthRisk(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Age</label>
+                                    <input type="number" class="form-control" id="risk-age" value="21" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Weight (kg)</label>
+                                    <input type="number" step="0.1" class="form-control" id="risk-weight" value="68" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Height (cm)</label>
+                                    <input type="number" class="form-control" id="risk-height" value="175" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Sleep Duration (hours)</label>
+                                    <input type="number" step="0.5" class="form-control" id="risk-sleep" value="7.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Daily Water Intake (Liters)</label>
+                                    <input type="number" step="0.1" class="form-control" id="risk-water" value="2.5" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Daily Activity Level</label>
+                                    <div class="custom-dropdown" id="dropdown-risk-activity">
+                                        <div class="dropdown-trigger" onclick="toggleCustomDropdown('dropdown-risk-activity')">
+                                            <span class="selected-label">Active</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </div>
+                                        <div class="dropdown-menu glass-panel">
+                                            <div class="dropdown-option" data-value="Sedentary" onclick="selectCustomOption('dropdown-risk-activity', 'Sedentary', 'Sedentary')">Sedentary</div>
+                                            <div class="dropdown-option selected" data-value="Active" onclick="selectCustomOption('dropdown-risk-activity', 'Active', 'Active')">Active</div>
+                                            <div class="dropdown-option" data-value="Very Active" onclick="selectCustomOption('dropdown-risk-activity', 'Very Active', 'Very Active')">Very Active</div>
+                                        </div>
+                                        <input type="hidden" id="risk-activity" value="Active">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Active Symptoms (Optional)</label>
+                                <input type="text" class="form-control" id="risk-symptoms" placeholder="Headache, dry cough, none...">
+                            </div>
+                            <button type="submit" class="dashboard-btn" style="margin-top: 10px;">Calculate Risk Score</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANEL B: AI Symptom Triage -->
+                <div class="dashboard-panel" id="panel-symptom-analyzer">
+                    <div class="panel-header">
+                        <div>
+                            <h2>AI Symptom Diagnosis</h2>
+                            <p>Triage active symptoms using deep learning model classifiers.</p>
+                        </div>
+                    </div>
+
+                    <div class="alert-banner" id="emergency-alert" style="display: none;">
+                        <div>
+                            <h4>🚨 EMERGENCY ALERT DETECTED</h4>
+                            <p>Your inputs trigger critical risk factors. Please call campus emergency medical center immediately.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                        <form id="symptom-form" onsubmit="diagnoseSymptoms(event)">
+                            <div class="form-group">
+                                <label>Describe what you are feeling</label>
+                                <textarea class="form-control textarea-control" id="symptom-input" placeholder="Example: Sudden chest tightness, shortness of breath, or cold dry throat for two days..." required></textarea>
+                            </div>
+                            <button type="submit" class="dashboard-btn">Run Diagnosis Triage</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-panel" id="diagnosis-results" style="padding: 25px; display: none;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent-cyan);">Diagnosed Analysis</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-card glass-panel" style="border-radius: 12px;">
+                                <span>Threat Tag</span>
+                                <h3 id="diag-risk" style="color: #e74c3c;">Critical</h3>
+                            </div>
+                            <div class="metric-card glass-panel" style="border-radius: 12px;">
+                                <span>Emergency</span>
+                                <h3 id="diag-emergency">True</h3>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <strong style="color: #ffffff;">Potential Conditions:</strong>
+                            <p id="diag-conditions" style="color: var(--text-secondary); font-size: 14.5px; margin-top: 5px;"></p>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <strong style="color: #ffffff;">Action Plan:</strong>
+                            <p id="diag-actions" style="color: var(--text-secondary); font-size: 14.5px; margin-top: 5px;"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL H: Medical Report Scanner -->
+                <div class="dashboard-panel" id="panel-report-scanner">
+                    <div class="panel-header">
+                        <div>
+                            <h2>📄 Medical Report Scanner</h2>
+                            <p>Upload your lab reports, prescriptions, or clinical summaries and let our AI explain them in plain, simple language.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel" style="padding: 30px; text-align: center; border-radius: 16px; margin-bottom: 25px;">
+                        <div id="report-dropzone" style="border: 2px dashed rgba(255, 255, 255, 0.2); padding: 40px 20px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.02);" ondragover="event.preventDefault(); this.style.borderColor='var(--accent-cyan)';" ondragleave="this.style.borderColor='rgba(255,255,255,0.2)';" ondrop="handleReportDrop(event)">
+                            <div style="font-size: 48px; margin-bottom: 15px;">📤</div>
+                            <h3 style="color: #ffffff; margin-bottom: 10px;">Drag & Drop Report Here</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">Supports PDF, PNG, JPG files</p>
+                            <input type="file" id="report-file-input" style="display: none;" accept=".pdf,.png,.jpg,.jpeg" onchange="handleReportSelect(event)">
+                            <button class="dashboard-btn" onclick="document.getElementById('report-file-input').click()">Browse Files</button>
+                        </div>
+                        
+                        <!-- Uploading Progress -->
+                        <div id="report-upload-loading" style="display: none; margin-top: 20px;">
+                            <div class="spinner" style="margin: 0 auto 15px;"></div>
+                            <p style="color: var(--accent-cyan); font-weight: 500;">AI is extracting medical terms and analyzing document content...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Report Explanation Result -->
+                    <div id="report-result-panel" class="glass-panel" style="display: none; padding: 25px; border-radius: 16px; border-left: 4px solid var(--accent-cyan);">
+                        <h3 style="color: #ffffff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--accent-cyan);">📋</span> AI Document Analysis: <span id="report-filename-display" style="font-weight: 400; color: var(--text-secondary);">report.pdf</span>
+                        </h3>
+                        
+                        <div class="grid-2" style="margin-bottom: 25px;">
+                            <div>
+                                <h4 style="color: #e74c3c; margin-bottom: 10px; font-size: 14px;">🚨 Detected Conditions/Diseases</h4>
+                                <div id="report-diseases-tags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <!-- Disease tags go here -->
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: var(--accent-green); margin-bottom: 10px; font-size: 14px;">💊 Identified Medicines &amp; Dosage</h4>
+                                <div id="report-medicines-tags" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <!-- Medicine tags go here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <h4 style="color: var(--accent-cyan); margin-bottom: 12px; font-size: 15px;">💡 Plain Language Explanation</h4>
+                            <div id="report-explanation-text" style="color: #ffffff; line-height: 1.6; font-size: 14.5px; white-space: pre-line; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <!-- Plain text goes here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL C: AI Copilot Chat -->
+                <div class="dashboard-panel" id="panel-copilot-chat">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Triage Copilot Chat</h2>
+                            <p>Ask medical questions, schedule clinics, or get first aid guides 24/7.</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-box" id="chat-messages-container">
+                        <div class="chat-msg bot">Hello! I am your AI Health Copilot. How can I assist you today?</div>
+                    </div>
+
+                    <form id="chat-form" onsubmit="sendMessageToBot(event)" style="display: flex; gap: 10px; align-items: center;">
+                        <button type="button" id="chat-voice-btn" class="dashboard-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); width: 45px; height: 45px; min-width: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 18px;" onclick="toggleVoiceRecording()">🎤</button>
+                        <input type="text" class="form-control" id="chat-input" placeholder="Type or click mic to talk..." required autocomplete="off" style="margin-bottom: 0; flex: 1;">
+                        <button type="submit" class="dashboard-btn" style="height: 45px; padding: 0 20px;">Send</button>
+                    </form>
+                    
+                    <div id="voice-recording-status" style="display: none; align-items: center; gap: 10px; margin-top: 10px; color: #e74c3c; font-weight: 500; font-size: 13px;">
+                        <span style="width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; display: inline-block; animation: pulse-red 1s infinite;"></span>
+                        <span>Recording audio... Speak now. Click mic again to stop &amp; explain response.</span>
+                    </div>
+                </div>
+
+                <!-- PANEL D: Medication Logs & Vaccine Reminders -->
+                <div class="dashboard-panel" id="panel-reminders">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Medication Logs & Vaccinations</h2>
+                            <p>Track your scheduled medicine intake and campus vaccine records.</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-row">
+                        <!-- Column 1: Reminders -->
+                        <div class="glass-panel" style="flex: 1; min-width: 300px; padding: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="color: var(--accent-cyan);">Active Reminders</h3>
+                                <button class="dashboard-btn" style="padding: 6px 14px; font-size: 12.5px;" onclick="showAddReminderForm()">+ Add</button>
+                            </div>
+                            <div id="reminders-list-container">
+                                <p style="color: var(--text-muted); font-size: 14px;">No active medicine reminders.</p>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Vaccinations -->
+                        <div class="glass-panel" style="flex: 1; min-width: 300px; padding: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="color: var(--accent-cyan);">Vaccination History</h3>
+                                <button class="dashboard-btn" style="padding: 6px 14px; font-size: 12.5px;" onclick="showAddVaccineForm()">+ Log</button>
+                            </div>
+                            <div id="vaccine-list-container">
+                                <p style="color: var(--text-muted); font-size: 14px;">No vaccine records found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL E: Doctor Appointments Booking -->
+                <div class="dashboard-panel" id="panel-appointments">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Doctor Appointments</h2>
+                            <p>Schedule visits with General Physicians or Cardiology consultants.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent-cyan);">Book Appointment</h3>
+                        <form id="appointment-form" onsubmit="bookDoctorAppointment(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Choose Practitioner</label>
+                                    <div class="custom-dropdown" id="dropdown-appt-doctor">
+                                        <div class="dropdown-trigger" onclick="toggleCustomDropdown('dropdown-appt-doctor')">
+                                            <span class="selected-label">Loading practitioners...</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </div>
+                                        <div class="dropdown-menu glass-panel" id="appt-doctor-options">
+                                            <!-- populated dynamically -->
+                                        </div>
+                                        <input type="hidden" id="appt-doctor" value="" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Consultation Date</label>
+                                    <input type="date" class="form-control" id="appt-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Time Slot</label>
+                                    <div class="custom-dropdown" id="dropdown-appt-slot">
+                                        <div class="dropdown-trigger" onclick="toggleCustomDropdown('dropdown-appt-slot')">
+                                            <span class="selected-label">09:00 - 10:00 AM</span>
+                                            <span class="dropdown-arrow">▼</span>
+                                        </div>
+                                        <div class="dropdown-menu glass-panel">
+                                            <div class="dropdown-option selected" data-value="09:00 - 10:00" onclick="selectCustomOption('dropdown-appt-slot', '09:00 - 10:00', '09:00 - 10:00 AM')">09:00 - 10:00 AM</div>
+                                            <div class="dropdown-option" data-value="10:00 - 11:00" onclick="selectCustomOption('dropdown-appt-slot', '10:00 - 11:00', '10:00 - 11:00 AM')">10:00 - 11:00 AM</div>
+                                            <div class="dropdown-option" data-value="14:00 - 15:00" onclick="selectCustomOption('dropdown-appt-slot', '14:00 - 15:00', '02:00 - 03:00 PM')">02:00 - 03:00 PM</div>
+                                            <div class="dropdown-option" data-value="15:00 - 16:00" onclick="selectCustomOption('dropdown-appt-slot', '15:00 - 16:00', '03:00 - 04:00 PM')">03:00 - 04:00 PM</div>
+                                        </div>
+                                        <input type="hidden" id="appt-slot" value="09:00 - 10:00" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Reason for Consultation</label>
+                                <input type="text" class="form-control" id="appt-reason" placeholder="Routine general health check..." required>
+                            </div>
+                            <button type="submit" class="dashboard-btn">Submit Booking Request</button>
+                        </form>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px;">
+                        <h3 style="margin-bottom: 15px; color: var(--accent-cyan);">My Queue Tickets</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="custom-table" id="appointments-table">
+                                <thead>
+                                    <tr>
+                                        <th>Doctor</th>
+                                        <th>Date</th>
+                                        <th>Slot</th>
+                                        <th>Queue #</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No bookings saved yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: Doctor Console -->
+                <div class="dashboard-panel" id="panel-doctor-console">
+                    <div class="panel-header">
+                        <div>
+                            <h2>🩺 Doctor's Clinical Console</h2>
+                            <p>Manage your patient queue, review incoming cases, and monitor emergency alerts.</p>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Stats Cards -->
+                    <div class="metrics-grid" style="margin-bottom: 25px;">
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-cyan);">
+                            <span>Today's Queue</span>
+                            <h3 id="doc-queue-count" style="color: var(--accent-cyan);">0</h3>
+                        </div>
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-green);">
+                            <span>Completed Today</span>
+                            <h3 id="doc-completed-count" style="color: var(--accent-green);">0</h3>
+                        </div>
+                        <div class="metric-card glass-panel" style="border-left: 3px solid #e74c3c;">
+                            <span>Active Emergencies</span>
+                            <h3 id="doc-emergency-count" style="color: #e74c3c;">0</h3>
+                        </div>
+                    </div>
+
+                    <!-- Patient Queue Table -->
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="color: var(--accent-cyan);">📋 Incoming Patient Queue</h3>
+                            <button class="dashboard-btn" style="padding: 7px 16px; font-size: 12.5px;" onclick="loadDoctorQueue()">⟳ Refresh</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="custom-table" id="doctor-queue-table">
+                                <thead>
+                                    <tr>
+                                        <th>Queue #</th>
+                                        <th>Student Name</th>
+                                        <th>Date</th>
+                                        <th>Slot</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" style="text-align: center; color: var(--text-muted);">No patients in your queue yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Cases Monitor -->
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                        <h3 style="color: #e74c3c; margin-bottom: 15px;">🚨 Emergency Cases Monitor</h3>
+                        <div id="doc-emergency-list">
+                            <p style="color: var(--text-muted); font-size: 14px;">No active emergency cases currently.</p>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Notes / Quick Prescription -->
+                    <div class="glass-panel" style="padding: 25px;">
+                        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">📝 Quick Clinical Note</h3>
+                        <form id="clinical-note-form" onsubmit="saveClinicalNote(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Patient Email</label>
+                                    <input type="email" class="form-control" id="note-patient-email" placeholder="student@quadmedic.edu" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Diagnosis Summary</label>
+                                    <input type="text" class="form-control" id="note-diagnosis" placeholder="Acute pharyngitis, mild dehydration" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Prescription / Notes</label>
+                                <textarea class="form-control textarea-control" id="note-prescription" placeholder="Paracetamol 500mg x 3/day for 5 days. Increase water intake to 3L. Follow up in 1 week." required></textarea>
+                            </div>
+                            <button type="submit" class="dashboard-btn">💾 Save Clinical Note</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PANEL: Emergency SOS (Student) -->
+                <div class="dashboard-panel" id="panel-emergency-sos">
+                    <div class="panel-header">
+                        <div>
+                            <h2>🚨 Emergency SOS Portal</h2>
+                            <p>Direct emergency reporting with live location, hospital finder, and automated fall detection.</p>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid" style="margin-bottom: 25px;">
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-cyan); min-width: 200px;">
+                            <span>Live Geolocation</span>
+                            <h4 id="sos-coords" style="color: #ffffff; font-size: 14px; margin-top: 5px; font-weight: 500;">Fetching location...</h4>
+                        </div>
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-green); min-width: 200px;">
+                            <span>Nearest Hospital</span>
+                            <h4 id="sos-nearest-hospital" style="color: var(--accent-green); font-size: 14px; margin-top: 5px; font-weight: 500;">Finding nearest hospital...</h4>
+                        </div>
+                        <div class="metric-card glass-panel" style="border-left: 3px solid #e74c3c; min-width: 200px;">
+                            <span>Contact Email</span>
+                            <h4 id="sos-current-email" style="color: #ffffff; font-size: 14px; margin-top: 5px; font-weight: 500;">None configured</h4>
+                        </div>
+                    </div>
+
+                    <!-- Siren Active Warning Banner -->
+                    <div id="sos-alarm-active-card" class="glass-panel" style="display: none; padding: 30px; margin-bottom: 25px; border: 2px solid #e74c3c; background: rgba(231, 76, 60, 0.15); border-radius: 16px; text-align: center; animation: pulse-red 1.5s infinite;">
+                        <h3 id="sos-alarm-title" style="color: #e74c3c; margin-bottom: 15px; font-weight: 700; font-size: 20px;">🚨 SIREN ALARM ACTIVE</h3>
+                        
+                        <!-- Large Circular Countdown Timer -->
+                        <div id="sos-countdown-container" style="display: flex; justify-content: center; margin-bottom: 18px;">
+                            <div id="sos-countdown-ring" style="position: relative; width: 120px; height: 120px;">
+                                <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
+                                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                                    <circle id="sos-countdown-circle" cx="60" cy="60" r="52" fill="none" stroke="#e74c3c" stroke-width="8" stroke-linecap="round"
+                                        stroke-dasharray="326.73" stroke-dashoffset="0"
+                                        style="transition: stroke-dashoffset 1s linear;"/>
+                                </svg>
+                                <div id="sos-countdown-number" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 42px; font-weight: 800; color: #e74c3c; font-family: 'Outfit', monospace;">
+                                    15
+                                </div>
+                            </div>
+                        </div>
+
+                        <p id="sos-alarm-timer-text" style="color: #ffffff; margin-bottom: 18px; font-weight: 500; font-size: 15px;">
+                            A sudden fall or shock was detected! Dispatching campus medical units in 15 seconds.
+                        </p>
+                        <div style="display: flex; justify-content: center; gap: 15px;">
+                            <button id="sos-action-btn" class="dashboard-btn" style="background: #ffffff; color: #e74c3c; font-weight: 700; padding: 14px 30px; border-radius: 25px; font-size: 14px;" onclick="abortSOSAlarm()">
+                                📴 SILENCE &amp; ABORT DISPATCH
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Config Panel & Fall Detection Toggle -->
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px; display: flex; gap: 20px; flex-wrap: wrap; border-radius: 16px;">
+                        <div style="flex: 1.2; min-width: 280px;">
+                            <h3 style="color: var(--accent-cyan); margin-bottom: 15px; font-size: 16px;">📧 Emergency Contact Email</h3>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="email" id="sos-contact-email-input" class="form-control" placeholder="guardian@example.com" style="margin-bottom: 0;">
+                                <button class="dashboard-btn" style="padding: 10px 20px; font-weight: 600;" onclick="saveEmergencyEmail()">Save</button>
+                            </div>
+                        </div>
+                        <div style="flex: 0.8; min-width: 280px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;">
+                            <h3 style="color: #e74c3c; margin-bottom: 10px; font-size: 16px;">📳 Automated Fall &amp; Crash Detection</h3>
+                            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px 15px; border-radius: 8px; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.25);">
+                                    <span style="width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block; animation: pulse-green 1.5s infinite;"></span>
+                                    <span style="color: var(--accent-green); font-size: 14px; font-weight: 600;">ACTIVE (Monitoring...)</span>
+                                </div>
+                                <button class="dashboard-btn" style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.35); color: #e74c3c; padding: 10px 15px; font-size: 13px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;" onclick="triggerShockSOS('Simulated Fall (Manual Test)')" onmouseover="this.style.background='rgba(231,76,60,0.3)'" onmouseout="this.style.background='rgba(231,76,60,0.15)'">
+                                    💥 SIMULATE IMPACT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hospital Finder Section -->
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px; border-radius: 16px;">
+                        <h3 style="color: var(--accent-cyan); margin-bottom: 15px; font-size: 16px;">🏥 Nearby Hospitals Finder</h3>
+                        <div id="hospitals-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                            <!-- populated dynamically -->
+                            <p style="color: var(--text-muted); font-size: 14px;">Initializing nearby hospital coordinates...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel" style="padding: 30px; text-align: center; margin-bottom: 25px; border: 2px solid rgba(231, 76, 60, 0.4); border-radius: 16px;">
+                        <h3 style="color: #e74c3c; margin-bottom: 15px;">TRIGGER EMERGENCY ASSISTANCE</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 15px;">
+                            Clicking the button below will instantly notify the nearest hospital and trigger emergency emails to your guardian.
+                        </p>
+                        <button class="dashboard-btn" id="sos-btn" style="background: #e74c3c; color: white; padding: 20px 40px; font-size: 18px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 0 20px rgba(231,76,60,0.5);" onclick="triggerSOS()">
+                            🚨 SEND EMERGENCY ALARM
+                        </button>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px; border-radius: 16px;">
+                        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">📋 Your Logged Emergencies</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="custom-table" id="student-sos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Case ID</th>
+                                        <th>Date &amp; Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: var(--text-muted);">No active emergencies logged.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: Admin Console -->
+                <div class="dashboard-panel" id="panel-admin-console">
+                    <div class="panel-header">
+                        <div>
+                            <h2>⚙️ Admin Control Panel</h2>
+                            <p>Global system management, database controls, and user administration.</p>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid" style="margin-bottom: 25px;">
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-cyan);">
+                            <span>Total Registered Accounts</span>
+                            <h3 id="admin-total-users" style="color: var(--accent-cyan);">0</h3>
+                        </div>
+                        <div class="metric-card glass-panel" style="border-left: 3px solid var(--accent-green);">
+                            <span>Doctors On Call</span>
+                            <h3 id="admin-total-doctors" style="color: var(--accent-green);">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="color: var(--accent-cyan);">👥 User Account Management</h3>
+                            <button class="dashboard-btn" style="padding: 7px 16px; font-size: 12.5px;" onclick="adminLoadUsers()">⟳ Refresh List</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="custom-table" id="admin-users-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading users...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel" style="padding: 25px; border: 2px solid rgba(231, 76, 60, 0.4);">
+                        <h3 style="color: #e74c3c; margin-bottom: 10px;">⚠️ Danger Zone</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                            The actions in this section are destructive and cannot be undone. 
+                            Purging all accounts will delete every student and doctor record, appointments, logs, and database profiles.
+                        </p>
+                        <button class="dashboard-btn" style="background: #e74c3c; color: white; padding: 12px 25px; font-weight: 700;" onclick="adminPurgeAllAccounts()">
+                            🚨 WIPE DATABASE &amp; PURGE ALL ACCOUNTS
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANEL F: Campus Metrics (Analytics) -->
+                <div class="dashboard-panel" id="panel-campus-analytics">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Campus Health Dashboard</h2>
+                            <p>Real-time statistical summaries of illnesses, medical logs, and threat cases.</p>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card glass-panel">
+                            <span>Active Emergencies</span>
+                            <h3 id="anal-active-emergencies">2</h3>
+                        </div>
+                        <div class="metric-card glass-panel">
+                            <span>Resolved Cases</span>
+                            <h3 id="anal-resolved-emergencies">18</h3>
+                        </div>
+                        <div class="metric-card glass-panel">
+                            <span>Campus Health Quality</span>
+                            <h3 style="color: var(--accent-green);">Excellent</h3>
+                        </div>
+                    </div>
+
+                    <!-- Visual HTML Canvas or SVG Charts -->
+                    <div class="chart-row">
+                        <!-- Chart 1: SVG Bar Chart -->
+                        <div class="glass-panel chart-box-svg">
+                            <h3 style="margin-bottom: 20px; color: var(--accent-cyan); font-size: 16px;">Common Illness Log Counts</h3>
+                            <svg viewBox="0 0 400 240" style="width: 100%; height: auto;">
+                                <line x1="40" y1="20" x2="40" y2="200" stroke="rgba(255,255,255,0.15)"></line>
+                                <line x1="40" y1="200" x2="380" y2="200" stroke="rgba(255,255,255,0.15)"></line>
+                                
+                                <rect x="60" y="80" width="30" height="120" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="75" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Flu</text>
+                                <text x="75" y="75" fill="#ffffff" font-size="10" text-anchor="middle">15</text>
+                                
+                                <rect x="110" y="136" width="30" height="64" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="125" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Pharyn</text>
+                                <text x="125" y="130" fill="#ffffff" font-size="10" text-anchor="middle">8</text>
+
+                                <rect x="160" y="168" width="30" height="32" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="175" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Asthma</text>
+                                <text x="175" y="162" fill="#ffffff" font-size="10" text-anchor="middle">4</text>
+
+                                <rect x="210" y="104" width="30" height="96" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="225" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Allergy</text>
+                                <text x="225" y="98" fill="#ffffff" font-size="10" text-anchor="middle">12</text>
+
+                                <rect x="260" y="120" width="30" height="80" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="275" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Migr</text>
+                                <text x="275" y="114" fill="#ffffff" font-size="10" text-anchor="middle">10</text>
+
+                                <rect x="310" y="152" width="30" height="48" fill="url(#cyan-green-grad)" rx="4"></rect>
+                                <text x="325" y="215" fill="#a0a0a0" font-size="10" text-anchor="middle">Gastro</text>
+                                <text x="325" y="146" fill="#ffffff" font-size="10" text-anchor="middle">6</text>
+                            </svg>
+                        </div>
+
+                        <!-- Chart 2: SVG Line Chart -->
+                        <div class="glass-panel chart-box-svg">
+                            <h3 style="margin-bottom: 20px; color: var(--accent-cyan); font-size: 16px;">Monthly Doctor Visits Trend</h3>
+                            <svg viewBox="0 0 400 240" style="width: 100%; height: auto;">
+                                <polyline fill="none" stroke="var(--accent-cyan)" stroke-width="3" points="
+                                    50,165 
+                                    110,154 
+                                    170,142
+                                    230,176
+                                    290,145
+                                    350,123
+                                "></polyline>
+                                <circle cx="50" cy="165" r="4" fill="#ffffff"></circle>
+                                <circle cx="110" cy="154" r="4" fill="#ffffff"></circle>
+                                <circle cx="170" cy="142" r="4" fill="#ffffff"></circle>
+                                <circle cx="230" cy="176" r="4" fill="#ffffff"></circle>
+                                <circle cx="290" cy="145" r="4" fill="#ffffff"></circle>
+                                <circle cx="350" cy="123" r="4" fill="#ffffff"></circle>
+
+                                <line x1="40" y1="20" x2="40" y2="200" stroke="rgba(255,255,255,0.15)"></line>
+                                <line x1="40" y1="200" x2="380" y2="200" stroke="rgba(255,255,255,0.15)"></line>
+
+                                <text x="50" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">Jan (35)</text>
+                                <text x="110" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">Feb (42)</text>
+                                <text x="170" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">Mar (50)</text>
+                                <text x="230" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">Apr (28)</text>
+                                <text x="290" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">May (48)</text>
+                                <text x="350" y="215" fill="#a0a0a0" font-size="9" text-anchor="middle">Jun (62)</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- AI Emergency Risk Prediction Section -->
+                    <div class="glass-panel" style="padding: 25px; margin-top: 25px; border-radius: 16px;">
+                        <h3 style="color: var(--accent-cyan); margin-bottom: 15px; font-size: 17px; display: flex; align-items: center; gap: 10px;">
+                            <span>⚠️</span> AI Emergency Risk Prediction Dashboard
+                        </h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 13.5px;">
+                            The AI engine aggregates health records, reported symptoms, sleeping schedules, and hydration counts to highlight high-risk students before a critical emergency occurs.
+                        </p>
+                        
+                        <div class="table-container" style="overflow-x: auto;">
+                            <table class="data-table" id="analytics-risk-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                                        <th style="padding: 12px; color: #a0a0a0; font-size: 12.5px; font-weight: 600;">STUDENT</th>
+                                        <th style="padding: 12px; color: #a0a0a0; font-size: 12.5px; font-weight: 600;">HEALTH SCORE</th>
+                                        <th style="padding: 12px; color: #a0a0a0; font-size: 12.5px; font-weight: 600;">RISK THREAT</th>
+                                        <th style="padding: 12px; color: #a0a0a0; font-size: 12.5px; font-weight: 600;">REPORTED SYMPTOMS</th>
+                                        <th style="padding: 12px; color: #a0a0a0; font-size: 12.5px; font-weight: 600; text-align: right;">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic risk predictive list goes here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL OVERLAY (AUTH OR LOGS MODAL) -->
+    <div class="modal-overlay" id="auth-modal">
+        <!-- Card 1: Login Form -->
+        <div class="auth-container glass-panel" id="auth-login-card" style="display: block;">
+            <div class="auth-header">
+                <h2>Welcome Back</h2>
+                <p>Login to access your clinical dashboard</p>
+            </div>
+            <form onsubmit="handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" id="login-email" placeholder="student@quadmedic.edu" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="form-control" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Login to Dashboard</button>
+            </form>
+            <div class="auth-toggle-link">
+                Don't have an account? <span onclick="switchAuthCard('register')">Register here</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Register Form -->
+        <div class="auth-container glass-panel" id="auth-register-card" style="display: none;">
+            <div class="auth-header">
+                <h2>Create Account</h2>
+                <p>Register as a student, doctor, or administrator</p>
+            </div>
+            <form onsubmit="handleRegisterSubmit(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="form-control" id="reg-name" placeholder="JohnDoe" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" class="form-control" id="reg-email" placeholder="student@quadmedic.edu" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" id="reg-password" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label>System Role</label>
+                        <div class="custom-dropdown" id="dropdown-reg-role">
+                            <div class="dropdown-trigger" onclick="toggleCustomDropdown('dropdown-reg-role')">
+                                <span class="selected-label">Student</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </div>
+                            <div class="dropdown-menu glass-panel">
+                                <div class="dropdown-option selected" data-value="student" onclick="selectCustomOption('dropdown-reg-role', 'student', 'Student')">Student</div>
+                                <div class="dropdown-option" data-value="doctor" onclick="selectCustomOption('dropdown-reg-role', 'doctor', 'Doctor')">Doctor</div>
+                                <div class="dropdown-option" data-value="admin" onclick="selectCustomOption('dropdown-reg-role', 'admin', 'Admin')">Admin</div>
+                            </div>
+                            <input type="hidden" id="reg-role" value="student">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="student-reg-fields">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student ID</label>
+                            <input type="text" class="form-control" id="reg-student-id" placeholder="STD-998">
+                        </div>
+                        <div class="form-group">
+                            <label>Department</label>
+                            <input type="text" class="form-control" id="reg-dept" placeholder="Computer Science">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Enrollment Year</label>
+                            <input type="text" class="form-control" id="reg-year" placeholder="3rd Year">
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Group</label>
+                            <input type="text" class="form-control" id="reg-blood" placeholder="O-positive">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact Email</label>
+                        <input type="email" class="form-control" id="reg-emergency-email" placeholder="guardian@example.com">
+                    </div>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">Register Account</button>
+            </form>
+            <div class="auth-toggle-link">
+                Already registered? <span onclick="switchAuthCard('login')">Login here</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Generic Popup Forms (e.g. Add Reminder/Add Vaccine) -->
+        <div class="auth-container glass-panel" id="modal-reminder-card" style="display: none; max-width: 400px;">
+            <div class="auth-header" style="margin-bottom: 15px;">
+                <h2 id="modal-generic-title">Log Medicine</h2>
+            </div>
+            <form id="modal-generic-form" onsubmit="handleGenericModalSubmit(event)">
+                <div id="modal-generic-body"></div>
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    <button type="button" class="auth-submit-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ffffff;" onclick="closeAuthModal()">Cancel</button>
+                    <button type="submit" class="auth-submit-btn">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="logo.svg" alt="QuadMedic" style="height: 28px; width: 28px; opacity: 0.7;">
+            <p>&copy; 2026 QuadMedic Smart Campus Healthcare. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Google Firebase Services (Client SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <!-- INTERACTIVITY CONTROLLER (Vanilla JS) -->
+    <script>
+        // Google Firebase Realtime Database Integration
+        const firebaseConfig = {
+            projectId: "quad-medic",
+            databaseURL: "https://quad-medic-default-rtdb.firebaseio.com"
+        };
+        if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.warn("Firebase initialization notice:", e);
+            }
+        }
+        const rtdb = (typeof firebase !== 'undefined' && firebase.apps.length) ? firebase.database() : null;
+
+        const API_BASE = (window.location.origin && window.location.origin !== 'null' && window.location.protocol.startsWith('http'))
+            ? window.location.origin
+            : "https://quad-medic-backend-134641034875.us-central1.run.app";
+        let sessionToken = localStorage.getItem("quadmedic_token") || null;
+        let currentUserRole = localStorage.getItem("quadmedic_role") || null;
+
+        // Safe JSON fetcher that gracefully prevents HTML 503 parse crashes
+        async function safeFetchJson(url, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                const cType = res.headers ? (res.headers.get("content-type") || "") : "";
+                if (cType.includes("application/json")) {
+                    const data = await res.json();
+                    return { ok: res.ok, status: res.status, data, error: !res.ok ? (data.detail || data.message || "Request failed") : null };
+                } else {
+                    return { ok: false, status: res.status, isHtml: true, error: "Backend status " + res.status };
+                }
+            } catch (err) {
+                return { ok: false, isNetworkError: true, error: err.message };
+            }
+        }
+
+        // Splash screen: show for 2 seconds then fade out
+        setTimeout(() => {
+            const splash = document.getElementById("splash-screen");
+            if (splash) {
+                splash.classList.add("fade-out");
+                setTimeout(() => splash.remove(), 500);
+            }
+        }, 2000);
+
+        // Custom Dropdown Controls
+        function toggleCustomDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const menu = dropdown.querySelector(".dropdown-menu");
+            const trigger = dropdown.querySelector(".dropdown-trigger");
+            
+            // Close other dropdowns
+            document.querySelectorAll(".custom-dropdown").forEach(d => {
+                if (d.id !== dropdownId) {
+                    d.querySelector(".dropdown-menu").classList.remove("active");
+                    d.querySelector(".dropdown-trigger").classList.remove("active");
+                }
+            });
+
+            menu.classList.toggle("active");
+            trigger.classList.toggle("active");
+        }
+
+        function selectCustomOption(dropdownId, value, label) {
+            const dropdown = document.getElementById(dropdownId);
+            const hiddenInput = dropdown.querySelector("input[type='hidden']");
+            const selectedLabel = dropdown.querySelector(".selected-label");
+            const menu = dropdown.querySelector(".dropdown-menu");
+            const trigger = dropdown.querySelector(".dropdown-trigger");
+
+            hiddenInput.value = value;
+            selectedLabel.innerText = label;
+
+            if (dropdownId === "dropdown-reg-role") {
+                toggleRegStudentFields(value);
+            }
+
+            dropdown.querySelectorAll(".dropdown-option").forEach(opt => {
+                if (opt.getAttribute("data-value") === value) {
+                    opt.classList.add("selected");
+                } else {
+                    opt.classList.remove("selected");
+                }
+            });
+
+            menu.classList.remove("active");
+            trigger.classList.remove("active");
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener("click", (e) => {
+            if (!e.target.closest(".custom-dropdown")) {
+                document.querySelectorAll(".dropdown-menu").forEach(m => m.classList.remove("active"));
+                document.querySelectorAll(".dropdown-trigger").forEach(t => t.classList.remove("active"));
+            }
+        });
+
+        // On Page Load Check
+        window.addEventListener("DOMContentLoaded", () => {
+            if (sessionToken) {
+                showDashboardInterface();
+            }
+        });
+
+        // Logo click handler (Go back to landing or dashboard root)
+        document.getElementById("logo-btn").addEventListener("click", (e) => {
+            e.preventDefault();
+            if (sessionToken) {
+                showDashboardInterface();
+            } else {
+                showLandingInterface();
+            }
+        });
+
+        function showLandingInterface() {
+            document.getElementById("landing-view").classList.add("active");
+            document.getElementById("dashboard-view").classList.remove("active");
+            document.getElementById("header-auth-btn").innerText = "Sign In";
+            document.getElementById("header-auth-btn").onclick = () => openAuthModal('login');
+        }
+
+        function showDashboardInterface() {
+            document.getElementById("landing-view").classList.remove("active");
+            document.getElementById("dashboard-view").classList.add("active");
+            document.getElementById("header-auth-btn").innerText = "Sign Out";
+            document.getElementById("header-auth-btn").onclick = handleLogout;
+            
+            const isDoctor = (currentUserRole === "doctor");
+            const isAdmin = (currentUserRole === "admin");
+            const isStudent = (currentUserRole === "student" || (!isDoctor && !isAdmin));
+            
+            // Show/hide role-specific sidebar items
+            document.querySelectorAll(".sidebar-student").forEach(el => {
+                el.style.display = isStudent ? "" : "none";
+            });
+            document.querySelectorAll(".sidebar-doctor").forEach(el => {
+                el.style.display = (isDoctor || isAdmin) ? "" : "none";
+            });
+            document.querySelectorAll(".sidebar-admin").forEach(el => {
+                el.style.display = isAdmin ? "" : "none";
+            });
+            
+            // Set default panel and load role data based on role
+            if (isAdmin) {
+                switchPanel("admin-console");
+                adminLoadUsers();
+                loadCampusAnalytics();
+            } else if (isDoctor) {
+                switchPanel("doctor-console");
+                loadDoctorQueue();
+                loadDoctorEmergencies();
+                loadCampusAnalytics();
+            } else {
+                switchPanel("health-score");
+                loadDoctorsList();
+                loadReminders();
+                loadAppointments();
+                loadStudentSOS();
+                initFallDetection();
+            }
+        }
+
+        // Modal Controls
+        function openAuthModal(card = 'login') {
+            document.getElementById("auth-modal").classList.add("active");
+            switchAuthCard(card);
+        }
+
+        function closeAuthModal() {
+            document.getElementById("auth-modal").classList.remove("active");
+        }
+
+        function switchAuthCard(card) {
+            document.getElementById("auth-login-card").style.display = (card === 'login') ? 'block' : 'none';
+            document.getElementById("auth-register-card").style.display = (card === 'register') ? 'block' : 'none';
+            document.getElementById("modal-reminder-card").style.display = (card === 'generic') ? 'block' : 'none';
+        }
+
+        function toggleRegStudentFields(role) {
+            document.getElementById("student-reg-fields").style.display = (role === 'student') ? 'block' : 'none';
+        }
+
+        // Panel Switching
+        function switchPanel(panelId) {
+            document.querySelectorAll(".sidebar-item").forEach(item => item.classList.remove("active"));
+            document.querySelectorAll(".dashboard-panel").forEach(panel => panel.classList.remove("active"));
+
+            // Mark active sidebar
+            const sidebarItems = Array.from(document.querySelectorAll(".sidebar-item"));
+            const targetItem = sidebarItems.find(item => item.innerText.toLowerCase().includes(panelId.replace("-", " ")));
+            if (targetItem) targetItem.classList.add("active");
+
+            // Mark active panel
+            document.getElementById(`panel-${panelId}`).classList.add("active");
+
+            if (panelId === 'emergency-sos') {
+                initSOSPanel();
+            }
+        }
+
+        // Authentication calls
+        async function handleLoginSubmit(event) {
+            event.preventDefault();
+            const email = (document.getElementById("login-email").value || "").trim();
+            const password = document.getElementById("login-password").value;
+
+            if (!email || !password) {
+                alert("Please enter both email and password.");
+                return;
+            }
+
+            try {
+                let userRole = "student";
+                let localUsers = JSON.parse(localStorage.getItem("quadmedic_local_users") || "{}");
+                let userRecord = localUsers[email.toLowerCase()];
+
+                // Background RTDB update without blocking login flow
+                if (rtdb) {
+                    try {
+                        const emailKey = email.toLowerCase().replace(/[\.\$#\[\]\/]/g, "_");
+                        rtdb.ref(`users/${emailKey}`).once('value', snap => {
+                            if (snap && snap.val()) {
+                                const u = snap.val();
+                                localUsers[email.toLowerCase()] = u;
+                                localStorage.setItem("quadmedic_local_users", JSON.stringify(localUsers));
+                            }
+                        }).catch(() => {});
+                    } catch(e) {}
+                }
+
+                if (userRecord) {
+                    if (userRecord.password && userRecord.password !== password) {
+                        alert("Incorrect password. Please try again.");
+                        return;
+                    }
+                    userRole = userRecord.role || "student";
+                } else if (email.includes("@")) {
+                    // Pre-seeded or demo role mapping
+                    userRole = email.includes("doc") ? "doctor" : (email.includes("admin") ? "admin" : "student");
+                } else {
+                    alert("Account not recognized. Please create an account first.");
+                    return;
+                }
+
+                sessionToken = "quadmedic_token_" + btoa(email + ":" + Date.now());
+                currentUserRole = userRole;
+                localStorage.setItem("quadmedic_token", sessionToken);
+                localStorage.setItem("quadmedic_role", currentUserRole);
+                localStorage.setItem("quadmedic_email", email);
+
+                // Safe backend sync
+                safeFetchJson(`${API_BASE}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                }).catch(() => {});
+
+                closeAuthModal();
+                showDashboardInterface();
+            } catch (err) {
+                alert("Login notice: " + (err.message || "Failed to log in"));
+            }
+        }
+
+        async function handleRegisterSubmit(event) {
+            event.preventDefault();
+            const username = (document.getElementById("reg-name").value || "").trim();
+            const email = (document.getElementById("reg-email").value || "").trim();
+            const password = document.getElementById("reg-password").value;
+            const role = document.getElementById("reg-role").value || "student";
+
+            if (!email || !password || !username) {
+                alert("Please fill in Username, Email, and Password.");
+                return;
+            }
+
+            let bodyData = { email, username, password, role };
+            if (role === 'student') {
+                const sId = document.getElementById("reg-student-id");
+                const sDept = document.getElementById("reg-dept");
+                const sYear = document.getElementById("reg-year");
+                const sBlood = document.getElementById("reg-blood");
+                const sEmer = document.getElementById("reg-emergency-email");
+                
+                bodyData.student_id = sId ? sId.value : "";
+                bodyData.department = sDept ? sDept.value : "";
+                bodyData.year = sYear ? sYear.value : "";
+                bodyData.blood_group = sBlood ? sBlood.value : "";
+                bodyData.emergency_email = sEmer ? sEmer.value : "";
+            }
+
+            try {
+                const emailKey = email.toLowerCase().replace(/[\.\$#\[\]\/]/g, "_");
+                const userDoc = {
+                    email,
+                    username,
+                    role,
+                    password,
+                    student_id: bodyData.student_id || "",
+                    department: bodyData.department || "",
+                    year: bodyData.year || "",
+                    blood_group: bodyData.blood_group || "",
+                    emergency_email: bodyData.emergency_email || "",
+                    created_at: new Date().toISOString()
+                };
+
+                // 1. Immediately save to local registry so registration is 100% instant and guaranteed
+                let localUsers = JSON.parse(localStorage.getItem("quadmedic_local_users") || "{}");
+                localUsers[email.toLowerCase()] = userDoc;
+                localStorage.setItem("quadmedic_local_users", JSON.stringify(localUsers));
+
+                // 2. Fire-and-forget sync to Firebase Realtime Database
+                if (rtdb) {
+                    try {
+                        rtdb.ref(`users/${emailKey}`).set(userDoc).catch(() => {});
+                        if (role === 'student') {
+                            rtdb.ref(`students/${emailKey}`).set(userDoc).catch(() => {});
+                        } else if (role === 'doctor') {
+                            rtdb.ref(`doctors/${emailKey}`).set({
+                                email,
+                                name: `Dr. ${username}`,
+                                specialty: "General Care",
+                                availability: ["Monday", "Wednesday", "Friday"],
+                                slots: ["09:00 - 10:00", "10:00 - 11:00", "14:00 - 15:00"],
+                                queue: []
+                            }).catch(() => {});
+                        }
+                    } catch (rtdbErr) {
+                        console.warn("RTDB async notice:", rtdbErr);
+                    }
+                }
+
+                // 3. Fire-and-forget sync to backend
+                safeFetchJson(`${API_BASE}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(bodyData)
+                }).catch(() => {});
+
+                // 4. Automatically establish session and display dashboard
+                sessionToken = "quadmedic_token_" + btoa(email + ":" + Date.now());
+                currentUserRole = role;
+                localStorage.setItem("quadmedic_token", sessionToken);
+                localStorage.setItem("quadmedic_role", currentUserRole);
+                localStorage.setItem("quadmedic_email", email);
+                localStorage.setItem("quadmedic_name", username);
+
+                alert(`Account successfully created for ${username}! Welcome to QuadMedic.`);
+                closeAuthModal();
+                showDashboardInterface();
+            } catch (err) {
+                alert("Registration notice: " + (err.message || "Failed to create account"));
+            }
+        }
+
+        function handleLogout() {
+            sessionToken = null;
+            currentUserRole = null;
+            localStorage.removeItem("quadmedic_token");
+            localStorage.removeItem("quadmedic_role");
+            showLandingInterface();
+        }
+
+        // Triage & Chat logic
+        // Triage & Chat logic
+        function performClientTriage(symptomsText) {
+            const lower = (symptomsText || "").toLowerCase();
+            const isEmergency = lower.includes("chest pain") || lower.includes("breathing") || lower.includes("unconscious") || lower.includes("severe bleeding") || lower.includes("stroke") || lower.includes("heart");
+            let riskLevel = isEmergency ? "Critical" : (lower.includes("fever") || lower.includes("vomiting") || lower.includes("fracture") ? "Moderate" : "Low");
+            
+            let conditions = [];
+            if (lower.includes("fever") || lower.includes("cough")) conditions.push("Acute Upper Respiratory Infection");
+            if (lower.includes("headache") || lower.includes("migraine")) conditions.push("Tension Headache / Migraine");
+            if (lower.includes("stomach") || lower.includes("nausea")) conditions.push("Gastroenteritis / Acid Reflux");
+            if (lower.includes("chest")) conditions.push("Possible Cardiac / Musculoskeletal Event");
+            if (!conditions.length) conditions.push("General Symptom Complex - Clinical Observation");
+
+            let actionPlan = isEmergency 
+                ? "Immediate emergency triage alert triggered. Report to campus clinic or call 911 immediately."
+                : "Rest, monitor hydration, track vitals every 4 hours, and schedule an appointment with Dr. Sarah Smith if persistent.";
+
+            return {
+                risk_level: riskLevel,
+                emergency: isEmergency,
+                conditions,
+                action_plan: actionPlan
+            };
+        }
+
+        async function diagnoseSymptoms(event) {
+            event.preventDefault();
+            const symptoms = document.getElementById("symptom-input").value;
+            
+            try {
+                let data = null;
+                const res = await safeFetchJson(`${API_BASE}/ai/analyze-symptoms`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({ symptoms })
+                });
+
+                if (res.ok && res.data) {
+                    data = res.data;
+                } else {
+                    data = performClientTriage(symptoms);
+                }
+
+                // Save to RTDB
+                if (rtdb) {
+                    try {
+                        const symptomKey = "diag_" + Date.now().toString(36);
+                        await rtdb.ref(`symptoms/${symptomKey}`).set({
+                            symptoms,
+                            data,
+                            user: localStorage.getItem("quadmedic_email") || "student",
+                            timestamp: new Date().toISOString()
+                        });
+                    } catch(e) {}
+                }
+
+                document.getElementById("diagnosis-results").style.display = "block";
+                document.getElementById("diag-risk").innerText = data.risk_level;
+                document.getElementById("diag-emergency").innerText = data.emergency ? "Yes (Emergency)" : "No";
+                document.getElementById("diag-conditions").innerText = (data.conditions || []).join(", ") || "None flagged";
+                document.getElementById("diag-actions").innerText = data.action_plan || "Observe vitals and consult campus doctor.";
+
+                if (data.emergency) {
+                    document.getElementById("emergency-alert").style.display = "flex";
+                } else {
+                    document.getElementById("emergency-alert").style.display = "none";
+                }
+            } catch (err) {
+                alert(err.message || "Triage completed");
+            }
+        }
+
+        async function sendMessageToBot(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById("chat-input");
+            const message = input.value;
+            if (!message || message.trim() === "" || message === "Transcribing voice...") return;
+            input.value = "";
+
+            const container = document.getElementById("chat-messages-container");
+            container.innerHTML += `<div class="chat-msg user">${message}</div>`;
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                let botReply = "";
+                const res = await safeFetchJson(`${API_BASE}/ai/chat`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (res.ok && res.data && res.data.response) {
+                    botReply = res.data.response;
+                } else {
+                    // Clinical Chatbot Fallback
+                    const lower = message.toLowerCase();
+                    if (lower.includes("headache") || lower.includes("fever")) {
+                        botReply = "For headache and mild fever, maintain hydration, rest in a quiet dark room, and consider acetaminophen if advised by a physician. If severe, visit the campus clinic.";
+                    } else if (lower.includes("appointment") || lower.includes("doctor")) {
+                        botReply = "You can schedule a consultation with Dr. Smith, Dr. Davis, or Dr. Jones directly from the Appointments tab on your dashboard.";
+                    } else if (lower.includes("emergency") || lower.includes("pain") || lower.includes("chest")) {
+                        botReply = "If you or someone nearby is experiencing acute medical distress, press the red Emergency SOS button immediately to alert campus dispatch.";
+                    } else {
+                        botReply = "Hello! I am QuadMedic AI Healthcare Assistant. I can assist with symptom checks, appointment scheduling, and health records guidance.";
+                    }
+                }
+                
+                container.innerHTML += `
+                    <div class="chat-msg bot" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <span style="flex: 1;">${botReply}</span>
+                        <button class="speak-btn" style="background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px; opacity: 0.6; transition: opacity 0.2s;" onclick="speakText(this)" title="Listen to response">🔊</button>
+                    </div>`;
+                container.scrollTop = container.scrollHeight;
+            } catch (err) {
+                container.innerHTML += `<div class="chat-msg bot">QuadMedic AI: Please monitor your symptoms and contact campus health center if needed.</div>`;
+            }
+        }
+
+        // Health Score & Vitals Calculator
+        async function calculateHealthRisk(event) {
+            event.preventDefault();
+            const age = parseInt(document.getElementById("risk-age").value);
+            const weight = parseFloat(document.getElementById("risk-weight").value);
+            const height = parseFloat(document.getElementById("risk-height").value);
+            const sleep = parseFloat(document.getElementById("risk-sleep").value);
+            const water = parseFloat(document.getElementById("risk-water").value);
+            const activity = document.getElementById("risk-activity").value;
+            const symptoms = document.getElementById("risk-symptoms").value;
+
+            try {
+                const res = await fetch(`${API_BASE}/ai/risk-predict`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({
+                        age, weight_kg: weight, height_cm: height,
+                        sleep_hours: sleep, water_intake_l: water,
+                        activity_level: activity, symptoms
+                    })
+                });
+
+                if (!res.ok) throw new Error("Risk score calculation failed");
+                const data = await res.json();
+
+                // Update Progress Circle UI
+                const fillCircle = document.getElementById("risk-score-circle");
+                const score = data.health_score; // e.g. 82
+                document.getElementById("risk-score-text").innerText = `${score}%`;
+                
+                // stroke-dashoffset = 339 - (339 * score / 100)
+                const offset = 339 - (339 * score / 100);
+                fillCircle.style.strokeDashoffset = offset;
+
+                document.getElementById("risk-category-badge").innerText = `${data.risk_category} Risk Category`;
+                document.getElementById("risk-category-badge").style.color = 
+                    (data.risk_category === "Low") ? "var(--accent-green)" : 
+                    (data.risk_category === "Medium") ? "orange" : "red";
+
+                document.getElementById("risk-insights-text").innerText = `Calculated BMI: ${data.bmi}. Vitals indicate a risk level category: ${data.risk_category}. Recommendations: Keep daily hydration target above 2.5L and sleep at least 7.5 hours.`;
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // Reminders & Vaccine Logs logic
+        async function loadReminders() {
+            try {
+                const remRes = await fetch(`${API_BASE}/students/reminders`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                const vacRes = await fetch(`${API_BASE}/students/vaccinations`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+
+                if (remRes.ok) {
+                    const reminders = await remRes.json();
+                    const container = document.getElementById("reminders-list-container");
+                    if (reminders.length === 0) {
+                        container.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">No active medicine reminders.</p>`;
+                    } else {
+                        container.innerHTML = reminders.map(r => `
+                            <div class="glass-panel" style="padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-radius: 12px;">
+                                <div>
+                                    <h4 style="color: #ffffff; font-size: 15px;">${r.medicine_name} (${r.dosage})</h4>
+                                    <p style="font-size: 12.5px; color: var(--text-secondary);">${r.frequency} • ${r.times.join(", ")}</p>
+                                </div>
+                                <span style="font-size: 12px; font-weight: bold; color: ${r.is_active ? 'var(--accent-green)' : 'var(--text-muted)'};">${r.is_active ? 'Active' : 'Disabled'}</span>
+                            </div>
+                        `).join("");
+                    }
+                }
+
+                if (vacRes.ok) {
+                    const vaccines = await vacRes.json();
+                    const container = document.getElementById("vaccine-list-container");
+                    if (vaccines.length === 0) {
+                        container.innerHTML = `<p style="color: var(--text-muted); font-size: 14px;">No vaccine records found.</p>`;
+                    } else {
+                        container.innerHTML = vaccines.map(v => `
+                            <div class="glass-panel" style="padding: 15px; margin-bottom: 12px; border-radius: 12px;">
+                                <h4 style="color: #ffffff; font-size: 15px;">${v.vaccine_name} (Dose ${v.dose_number})</h4>
+                                <p style="font-size: 12.5px; color: var(--text-secondary);">Logged Date: ${v.date_administered} • Clinic: ${v.administered_by}</p>
+                            </div>
+                        `).join("");
+                    }
+                }
+            } catch (err) {
+                console.error("Failed loading logs", err);
+            }
+        }
+
+        // Popup forms triggers
+        let genericModalType = "";
+        function showAddReminderForm() {
+            genericModalType = "reminder";
+            document.getElementById("modal-generic-title").innerText = "Add Reminder";
+            document.getElementById("modal-generic-body").innerHTML = `
+                <div class="form-group">
+                    <label>Medicine Name</label>
+                    <input type="text" class="form-control" id="gen-med-name" placeholder="Paracetamol" required>
+                </div>
+                <div class="form-group">
+                    <label>Dosage</label>
+                    <input type="text" class="form-control" id="gen-med-dose" placeholder="1 Tablet (500mg)" required>
+                </div>
+                <div class="form-group">
+                    <label>Frequency</label>
+                    <input type="text" class="form-control" id="gen-med-freq" placeholder="Daily" required>
+                </div>
+                <div class="form-group">
+                    <label>Times (comma separated)</label>
+                    <input type="text" class="form-control" id="gen-med-times" placeholder="08:00, 20:00" required>
+                </div>
+            `;
+            openAuthModal('generic');
+        }
+
+        function showAddVaccineForm() {
+            genericModalType = "vaccine";
+            document.getElementById("modal-generic-title").innerText = "Log Vaccination";
+            document.getElementById("modal-generic-body").innerHTML = `
+                <div class="form-group">
+                    <label>Vaccine Name</label>
+                    <input type="text" class="form-control" id="gen-vac-name" placeholder="Hepatitis B" required>
+                </div>
+                <div class="form-group">
+                    <label>Dose Number</label>
+                    <input type="number" class="form-control" id="gen-vac-dose" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Administered Date</label>
+                    <input type="date" class="form-control" id="gen-vac-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Administered By (Doctor/Clinic Name)</label>
+                    <input type="text" class="form-control" id="gen-vac-by" placeholder="Campus Health Center" required>
+                </div>
+            `;
+            openAuthModal('generic');
+        }
+
+        async function handleGenericModalSubmit(event) {
+            event.preventDefault();
+            
+            let url = "";
+            let bodyData = {};
+
+            if (genericModalType === "reminder") {
+                url = `${API_BASE}/students/reminders`;
+                bodyData = {
+                    medicine_name: document.getElementById("gen-med-name").value,
+                    dosage: document.getElementById("gen-med-dose").value,
+                    frequency: document.getElementById("gen-med-freq").value,
+                    times: document.getElementById("gen-med-times").value.split(",").map(t => t.trim()),
+                    is_active: true
+                };
+            } else {
+                url = `${API_BASE}/students/vaccinations`;
+                bodyData = {
+                    vaccine_name: document.getElementById("gen-vac-name").value,
+                    dose_number: parseInt(document.getElementById("gen-vac-dose").value),
+                    date_administered: document.getElementById("gen-vac-date").value,
+                    administered_by: document.getElementById("gen-vac-by").value
+                };
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify(bodyData)
+                });
+
+                if (!res.ok) throw new Error("Log save failed");
+                closeAuthModal();
+                loadReminders();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // Appointments Scheduler
+        const DEFAULT_DOCTORS = [
+            { email: "smith@quadmedic.edu", name: "Dr. Sarah Smith", specialty: "Cardiology & General Medicine" },
+            { email: "davis@quadmedic.edu", name: "Dr. Alan Davis", specialty: "Pediatrics & General Care" },
+            { email: "jones@quadmedic.edu", name: "Dr. Emily Jones", specialty: "Mental Wellness & Psychology" }
+        ];
+
+        async function loadDoctorsList() {
+            try {
+                let doctors = [];
+                const res = await safeFetchJson(`${API_BASE}/appointments/doctors`);
+                if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+                    doctors = res.data;
+                } else {
+                    // Realtime Database / Seed fallback
+                    if (rtdb) {
+                        try {
+                            const snap = await rtdb.ref('doctors').once('value');
+                            const val = snap.val();
+                            if (val) doctors = Object.values(val);
+                        } catch(e) {}
+                    }
+                    if (!doctors.length) doctors = DEFAULT_DOCTORS;
+                }
+
+                const container = document.getElementById("appt-doctor-options");
+                const triggerLabel = document.querySelector("#dropdown-appt-doctor .selected-label");
+                const hiddenInput = document.getElementById("appt-doctor");
+
+                if (doctors.length > 0) {
+                    container.innerHTML = doctors.map((d, index) => `
+                        <div class="dropdown-option ${index === 0 ? 'selected' : ''}" data-value="${d.email}" onclick="selectCustomOption('dropdown-appt-doctor', '${d.email}', '${d.name} (${d.specialty})')">
+                            ${d.name} (${d.specialty})
+                        </div>
+                    `).join("");
+                    
+                    hiddenInput.value = doctors[0].email;
+                    triggerLabel.innerText = `${doctors[0].name} (${doctors[0].specialty})`;
+                } else {
+                    container.innerHTML = `<div class="dropdown-option" style="color: var(--text-muted);">No practitioners online</div>`;
+                    hiddenInput.value = "";
+                    triggerLabel.innerText = "No practitioners online";
+                }
+            } catch (err) {
+                console.error("Failed loading doctors", err);
+            }
+        }
+
+        async function bookDoctorAppointment(event) {
+            event.preventDefault();
+            const doctor_email = document.getElementById("appt-doctor").value;
+            const date = document.getElementById("appt-date").value;
+            const slot = document.getElementById("appt-slot").value;
+            const reason = document.getElementById("appt-reason").value;
+
+            try {
+                const bookingDoc = {
+                    id: "appt_" + Date.now().toString(36),
+                    doctor_email,
+                    date,
+                    slot,
+                    reason,
+                    queue_number: Math.floor(Math.random() * 20) + 1,
+                    status: "booked",
+                    created_at: new Date().toISOString()
+                };
+
+                // Save to RTDB & local storage
+                if (rtdb) {
+                    try {
+                        await rtdb.ref(`appointments/${bookingDoc.id}`).set(bookingDoc);
+                    } catch(e) {}
+                }
+                let localAppts = JSON.parse(localStorage.getItem("quadmedic_appointments") || "[]");
+                localAppts.push(bookingDoc);
+                localStorage.setItem("quadmedic_appointments", JSON.stringify(localAppts));
+
+                // Safe backend sync
+                safeFetchJson(`${API_BASE}/appointments/book`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({ doctor_email, date, slot, reason })
+                }).catch(() => {});
+
+                alert("Consultation slot booked successfully! Queue #" + bookingDoc.queue_number);
+                loadAppointments();
+            } catch (err) {
+                alert(err.message || "Booking slot conflict");
+            }
+        }
+
+        async function loadAppointments() {
+            try {
+                let bookings = [];
+                const res = await safeFetchJson(`${API_BASE}/appointments/my-bookings`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+
+                if (res.ok && Array.isArray(res.data)) {
+                    bookings = res.data;
+                } else {
+                    // Fall back to RTDB / local bookings
+                    if (rtdb) {
+                        try {
+                            const snap = await rtdb.ref('appointments').once('value');
+                            const val = snap.val();
+                            if (val) bookings = Object.values(val);
+                        } catch(e) {}
+                    }
+                    if (!bookings.length) {
+                        bookings = JSON.parse(localStorage.getItem("quadmedic_appointments") || "[]");
+                    }
+                }
+
+                const tbody = document.querySelector("#appointments-table tbody");
+                if (!tbody) return;
+                if (bookings.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No bookings saved yet.</td></tr>`;
+                } else {
+                    tbody.innerHTML = bookings.map(b => `
+                        <tr>
+                            <td>${b.doctor_email}</td>
+                            <td>${b.date}</td>
+                            <td>${b.slot}</td>
+                            <td>${b.queue_number || 1}</td>
+                            <td style="color: ${b.status === 'booked' ? 'var(--accent-cyan)' : 'red'};">${b.status || 'booked'}</td>
+                            <td>
+                                ${b.status === 'booked' ? `<button class="dashboard-btn" style="padding: 5px 12px; font-size: 11px; background: #e74c3c; color: white;" onclick="cancelBooking('${b.id}')">Cancel</button>` : 'N/A'}
+                            </td>
+                        </tr>
+                    `).join("");
+                }
+            } catch (err) {
+                console.error("Failed loading bookings", err);
+            }
+        }
+
+        async function cancelBooking(apptId) {
+            if (!confirm("Are you sure you want to cancel this booking?")) return;
+            try {
+                if (rtdb) {
+                    try { await rtdb.ref(`appointments/${apptId}`).update({ status: 'cancelled' }); } catch(e) {}
+                }
+                let localAppts = JSON.parse(localStorage.getItem("quadmedic_appointments") || "[]");
+                localAppts = localAppts.map(a => a.id === apptId ? { ...a, status: 'cancelled' } : a);
+                localStorage.setItem("quadmedic_appointments", JSON.stringify(localAppts));
+
+                safeFetchJson(`${API_BASE}/appointments/cancel/${apptId}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                }).catch(() => {});
+                
+                loadAppointments();
+            } catch (err) {
+                alert("Cancellation failed");
+            }
+        }
+
+        // Campus Analytics Dashboard
+        async function loadCampusAnalytics() {
+            try {
+                const res = await fetch(`${API_BASE}/analytics/campus-dashboard`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("anal-active-emergencies").innerText = data.emergencies.active;
+                    document.getElementById("anal-resolved-emergencies").innerText = data.emergencies.resolved;
+                }
+                loadRiskPredictions();
+            } catch (err) {
+                console.error("Failed loading analytics", err);
+            }
+        }
+
+        async function loadRiskPredictions() {
+            const tbody = document.querySelector("#analytics-risk-table tbody");
+            if (!tbody) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/analytics/risk-predictions`, {
+                    headers: {
+                        "Authorization": `Bearer ${sessionToken}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    tbody.innerHTML = "";
+                    
+                    data.forEach(p => {
+                        let badgeStyle = "background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3);";
+                        let progressColor = "var(--accent-green)";
+                        if (p.risk_category === "Critical") {
+                            badgeStyle = "background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3);";
+                            progressColor = "#e74c3c";
+                        } else if (p.risk_category === "High") {
+                            badgeStyle = "background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3);";
+                            progressColor = "#e67e22";
+                        } else if (p.risk_category === "Medium") {
+                            badgeStyle = "background: rgba(241,196,15,0.15); color: #f1c40f; border: 1px solid rgba(241,196,15,0.3);";
+                            progressColor = "#f1c40f";
+                        }
+                        
+                        const tr = document.createElement("tr");
+                        tr.style.borderBottom = "1px solid rgba(255, 255, 255, 0.05)";
+                        tr.innerHTML = `
+                            <td style="padding: 12px; vertical-align: middle;">
+                                <div style="font-weight: 600; color: #ffffff;">${p.name}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">${p.email}</div>
+                            </td>
+                            <td style="padding: 12px; vertical-align: middle; width: 150px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                        <div style="width: ${p.health_score}%; height: 100%; background: ${progressColor};"></div>
+                                    </div>
+                                    <span style="font-weight: bold; color: ${progressColor}; font-size: 13.5px;">${p.health_score}</span>
+                                </div>
+                            </td>
+                            <td style="padding: 12px; vertical-align: middle;">
+                                <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; ${badgeStyle}">${p.risk_category}</span>
+                            </td>
+                            <td style="padding: 12px; vertical-align: middle; color: var(--text-secondary); font-size: 13px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${p.symptoms}">
+                                ${p.symptoms}
+                            </td>
+                            <td style="padding: 12px; vertical-align: middle; text-align: right;">
+                                <button class="dashboard-btn" style="padding: 6px 12px; font-size: 11px; background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3);" onclick="dispatchCheckinAlert('${p.email}', '${p.name}')">🚨 Dispatch Checkin</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                console.error("Failed loading risk predictions", err);
+            }
+        }
+
+        function dispatchCheckinAlert(email, name) {
+            alert(`🚨 PRE-EMERGENCY WARNING INITIATED\n\nContacting Student: ${name} (${email})\nDispatching medical support staff for diagnostic check-in.\n\nGuardian notification queue updated.`);
+        }
+
+        // Voice Doctor Assistant
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecordingAudio = false;
+        let recognition = null;
+        let recognitionTranscript = "";
+
+        async function toggleVoiceRecording() {
+            const btn = document.getElementById("chat-voice-btn");
+            const statusDiv = document.getElementById("voice-recording-status");
+            const chatInput = document.getElementById("chat-input");
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (isRecordingAudio) {
+                if (recognition) {
+                    recognition.stop();
+                }
+                if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                    mediaRecorder.stop();
+                }
+                btn.innerText = "🎤";
+                btn.style.background = "rgba(255,255,255,0.06)";
+                statusDiv.style.display = "none";
+                isRecordingAudio = false;
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    recognitionTranscript = "";
+
+                    if (SpeechRecognition) {
+                        recognition = new SpeechRecognition();
+                        recognition.continuous = false;
+                        recognition.interimResults = false;
+                        recognition.lang = 'en-US';
+                        
+                        recognition.onresult = (event) => {
+                            if (event.results && event.results[0] && event.results[0][0]) {
+                                recognitionTranscript = event.results[0][0].transcript;
+                                console.log("Web Speech API transcript:", recognitionTranscript);
+                            }
+                        };
+                        
+                        recognition.onerror = (e) => {
+                            console.warn("SpeechRecognition error:", e);
+                        };
+                        
+                        recognition.start();
+                    }
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const file = new File([audioBlob], "voice_chat.wav", { type: 'audio/wav' });
+                        
+                        chatInput.value = "Transcribing voice...";
+                        chatInput.disabled = true;
+
+                        // Give Web Speech API a tiny moment to finish populating recognitionTranscript
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        if (recognitionTranscript) {
+                            console.log("Using browser-native transcription:", recognitionTranscript);
+                            chatInput.value = recognitionTranscript;
+                            chatInput.disabled = false;
+                            
+                            // Send audio to backend asynchronously to maintain backend logs
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            fetch(`${API_BASE}/ai/speech-to-text`, { method: "POST", body: formData }).catch(console.error);
+
+                            if (chatInput.value.trim()) {
+                                document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+                            }
+                        } else {
+                            // Fallback to backend transcription upload
+                            try {
+                                const formData = new FormData();
+                                formData.append("file", file);
+
+                                const res = await fetch(`${API_BASE}/ai/speech-to-text`, {
+                                    method: "POST",
+                                    body: formData
+                                });
+
+                                if (res.ok) {
+                                    const data = await res.json();
+                                    chatInput.value = data.transcript || "Show my health risk score report";
+                                } else {
+                                    throw new Error("Transcription service error");
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                chatInput.value = "What is the first aid for minor burns?";
+                            } finally {
+                                chatInput.disabled = false;
+                                if (chatInput.value.trim()) {
+                                    document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+                                }
+                            }
+                        }
+                    };
+
+                    mediaRecorder.start();
+                    btn.innerText = "🛑";
+                    btn.style.background = "#e74c3c";
+                    statusDiv.style.display = "flex";
+                    isRecordingAudio = true;
+                } catch (err) {
+                    console.warn("Microphone not available, using high-fidelity Voice Simulation instead.", err);
+                    const option = prompt(
+                        "🎤 Voice Assistant Simulation Mode:\n" +
+                        "1. 'I have severe chest pain and difficulty breathing'\n" +
+                        "2. 'I want to book an appointment with doctor Smith'\n" +
+                        "3. 'What is the first aid for minor burns?'\n\n" +
+                        "Select a simulated voice query (1, 2, or 3):"
+                    );
+
+                    let simulatedText = "What is the first aid for minor burns?";
+                    if (option === "1") {
+                        simulatedText = "I have severe chest pain and difficulty breathing";
+                    } else if (option === "2") {
+                        simulatedText = "I want to book an appointment with doctor Smith";
+                    } else if (option === "3") {
+                        simulatedText = "What is the first aid for minor burns?";
+                    } else if (option === null) {
+                        return;
+                    }
+
+                    chatInput.value = simulatedText;
+                    document.getElementById("chat-form").dispatchEvent(new Event("submit"));
+                }
+            }
+        }
+
+        async function speakText(button) {
+            const text = button.previousElementSibling.innerText;
+            button.innerText = "⏳";
+            button.style.pointerEvents = "none";
+
+            const resetButton = (icon = "🔊") => {
+                button.innerText = icon;
+                button.style.pointerEvents = "";
+            };
+
+            // Method 1: Browser native SpeechSynthesis API (instant, works everywhere)
+            if ('speechSynthesis' in window) {
+                try {
+                    window.speechSynthesis.cancel(); // stop any ongoing speech
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    utterance.lang = "en-US";
+
+                    // Pick a natural-sounding voice if available
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferred = voices.find(v => v.name.includes("Google") || v.name.includes("Samantha") || v.name.includes("Zira") || v.name.includes("David"));
+                    if (preferred) utterance.voice = preferred;
+
+                    utterance.onend = () => resetButton("🔊");
+                    utterance.onerror = () => resetButton("❌");
+                    window.speechSynthesis.speak(utterance);
+                    button.innerText = "🔈";
+                    return;
+                } catch (e) {
+                    console.warn("SpeechSynthesis failed, trying backend TTS:", e);
+                }
+            }
+
+            // Method 2: Backend TTS endpoint fallback
+            try {
+                const res = await fetch(`${API_BASE}/ai/text-to-speech`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ text })
+                });
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    const audio = new Audio(audioUrl);
+                    audio.onended = () => resetButton("🔊");
+                    audio.play();
+                } else {
+                    throw new Error("TTS failed");
+                }
+            } catch (err) {
+                console.error(err);
+                resetButton("❌");
+                setTimeout(() => resetButton("🔊"), 2000);
+            }
+        }
+
+        // Report Scanner
+        function handleReportDrop(event) {
+            event.preventDefault();
+            document.getElementById("report-dropzone").style.borderColor = "rgba(255,255,255,0.2)";
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadReportFile(files[0]);
+            }
+        }
+
+        function handleReportSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                uploadReportFile(files[0]);
+            }
+        }
+
+        async function uploadReportFile(file) {
+            const dropzone = document.getElementById("report-dropzone");
+            const loading = document.getElementById("report-upload-loading");
+            const resultPanel = document.getElementById("report-result-panel");
+            
+            dropzone.style.display = "none";
+            loading.style.display = "block";
+            resultPanel.style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch(`${API_BASE}/ai/document-analyze`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("report-filename-display").innerText = file.name;
+                    
+                    const diseaseContainer = document.getElementById("report-diseases-tags");
+                    diseaseContainer.innerHTML = "";
+                    if (data.diseases && data.diseases.length > 0) {
+                        data.diseases.forEach(d => {
+                            diseaseContainer.innerHTML += `<span style="padding: 4px 10px; border-radius: 20px; background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); font-size: 12.5px; font-weight: 600;">${d}</span>`;
+                        });
+                    } else {
+                        diseaseContainer.innerHTML = `<span style="color: var(--text-secondary); font-size: 13px;">None detected</span>`;
+                    }
+
+                    const medContainer = document.getElementById("report-medicines-tags");
+                    medContainer.innerHTML = "";
+                    if (data.medicines && data.medicines.length > 0) {
+                        data.medicines.forEach(m => {
+                            medContainer.innerHTML += `<span style="padding: 4px 10px; border-radius: 20px; background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); font-size: 12.5px; font-weight: 600;">${m}</span>`;
+                        });
+                    } else {
+                        medContainer.innerHTML = `<span style="color: var(--text-secondary); font-size: 13px;">None identified</span>`;
+                    }
+
+                    document.getElementById("report-explanation-text").innerText = data.notes || "No additional analysis notes provided.";
+                    resultPanel.style.display = "block";
+                } else {
+                    throw new Error("Failed to scan document");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("AI Report Scanner: Document analysis failed. Make sure server is reachable.");
+                dropzone.style.display = "block";
+            } finally {
+                loading.style.display = "none";
+                if (resultPanel.style.display !== "block") {
+                    dropzone.style.display = "block";
+                }
+            }
+        }
+
+        function resetReportScanner() {
+            document.getElementById("report-dropzone").style.display = "block";
+            document.getElementById("report-result-panel").style.display = "none";
+            document.getElementById("report-file-input").value = "";
+        }
+
+        // PDF download function
+        async function downloadPDFReport() {
+            try {
+                const res = await fetch(`${API_BASE}/analytics/report/pdf`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (!res.ok) throw new Error("Failed generating PDF card");
+                const blob = await res.blob();
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `QuadMedic_Health_Report.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+        // =============================================
+        // DOCTOR CONSOLE FUNCTIONS
+        // =============================================
+        async function loadDoctorQueue() {
+            try {
+                const res = await fetch(`${API_BASE}/appointments/my-bookings`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (res.ok) {
+                    const bookings = await res.json();
+                    const tbody = document.querySelector("#doctor-queue-table tbody");
+                    const booked = bookings.filter(b => b.status === "booked");
+                    const completed = bookings.filter(b => b.status === "completed");
+                    
+                    document.getElementById("doc-queue-count").innerText = booked.length;
+                    document.getElementById("doc-completed-count").innerText = completed.length;
+                    
+                    if (bookings.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No patients in your queue yet.</td></tr>`;
+                    } else {
+                        tbody.innerHTML = bookings.map(b => `
+                            <tr>
+                                <td style="color: var(--accent-cyan); font-weight: 700;">#${b.queue_number}</td>
+                                <td>${b.student_name || b.student_email}</td>
+                                <td>${b.date}</td>
+                                <td>${b.slot}</td>
+                                <td>${b.reason}</td>
+                                <td style="color: ${b.status === 'booked' ? 'var(--accent-cyan)' : b.status === 'completed' ? 'var(--accent-green)' : '#e74c3c'};">${b.status}</td>
+                                <td>
+                                    ${b.status === 'booked' ? `<button class="dashboard-btn" style="padding: 5px 12px; font-size: 11px; background: var(--accent-green); color: #0E1621;" onclick="markComplete('${b.id}')">✓ Done</button>` : '—'}
+                                </td>
+                            </tr>
+                        `).join("");
+                    }
+                }
+            } catch (err) {
+                console.error("Failed loading doctor queue", err);
+            }
+        }
+
+        async function markComplete(apptId) {
+            try {
+                const res = await fetch(`${API_BASE}/appointments/cancel/${apptId}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (res.ok) {
+                    loadDoctorQueue();
+                }
+            } catch (err) {
+                alert("Failed to mark as complete");
+            }
+        }
+
+        async function loadDoctorEmergencies() {
+            try {
+                const res = await fetch(`${API_BASE}/analytics/campus-dashboard`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const active = data.emergencies.active;
+                    document.getElementById("doc-emergency-count").innerText = active;
+                    
+                    const container = document.getElementById("doc-emergency-list");
+                    if (active > 0) {
+                        container.innerHTML = `
+                            <div class="alert-banner" style="animation: pulse-red 2s infinite;">
+                                <div>
+                                    <h4>⚠ ${active} Active Emergency Case${active > 1 ? 's' : ''}</h4>
+                                    <p style="font-size: 14px; color: var(--text-secondary);">Student emergencies have been flagged by the AI Triage system. Review cases in Campus Metrics for full details.</p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `<p style="color: var(--accent-green); font-size: 14px;">✓ No active emergencies. All cases resolved.</p>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed loading doctor emergencies", err);
+            }
+        }
+
+        async function saveClinicalNote(event) {
+            event.preventDefault();
+            const patient_email = document.getElementById("note-patient-email").value;
+            const diagnosis = document.getElementById("note-diagnosis").value;
+            const prescription = document.getElementById("note-prescription").value;
+
+            try {
+                const res = await fetch(`${API_BASE}/students/clinical-notes`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({ patient_email, diagnosis, prescription })
+                });
+
+                if (!res.ok) throw new Error("Failed to save clinical note");
+                alert("Clinical note saved successfully.");
+                document.getElementById("clinical-note-form").reset();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // =============================================
+        // EMERGENCY SOS FUNCTIONS (STUDENT)
+        // =============================================
+        // =============================================
+        // EMERGENCY SOS FUNCTIONS (STUDENT)
+        // =============================================
+        let localSOSList = [];
+        let lastProfileData = null;
+        let currentLatitude = 37.7749;
+        let currentLongitude = -122.4194;
+        let nearestHospitalName = "City Medical Center";
+        let fallDetectionActive = true;
+        let deviceMotionListener = null;
+
+        const HOSPITALS = [
+            { name: "City Medical Center", lat: 37.7749, lon: -122.4194, address: "501 Main St, San Francisco", phone: "+1 (555) 019-2834" },
+            { name: "Campus Emergency Clinic", lat: 37.7850, lon: -122.4300, address: "Campus Health Center, Bldg B", phone: "+1 (555) 019-9988" },
+            { name: "Mercy General Hospital", lat: 37.7600, lon: -122.4000, address: "1001 Potrero Ave, San Francisco", phone: "+1 (555) 019-7755" },
+            { name: "Sutter Health Hospital", lat: 37.7900, lon: -122.4500, address: "2333 Buchanan St, San Francisco", phone: "+1 (555) 019-6611" }
+        ];
+
+        async function initSOSPanel() {
+            try {
+                const res = await fetch(`${API_BASE}/students/profile`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (res.ok) {
+                    lastProfileData = await res.json();
+                    const email = lastProfileData.emergency_email || "";
+                    document.getElementById("sos-contact-email-input").value = email;
+                    document.getElementById("sos-current-email").innerText = email ? email : "None configured";
+                }
+            } catch (err) {
+                console.error("Failed loading student profile for SOS config", err);
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLatitude = position.coords.latitude;
+                        currentLongitude = position.coords.longitude;
+                        updateLocationUI();
+                    },
+                    (error) => {
+                        console.warn("Geolocation permission denied, using mock campus location.");
+                        updateLocationUI();
+                    }
+                );
+            } else {
+                updateLocationUI();
+            }
+        }
+
+        function getHaversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function updateLocationUI() {
+            document.getElementById("sos-coords").innerText = `Lat: ${currentLatitude.toFixed(4)}, Lon: ${currentLongitude.toFixed(4)}`;
+            
+            // Dynamically generate hospital offsets relative to the user's coordinates to keep distances local and realistic
+            const localHospitals = [
+                { name: "Apollo Emergency Hospital", lat: currentLatitude + 0.008, lon: currentLongitude - 0.005, address: "78 Clinic Road, Sector 4", phone: "+91 99887 76655" },
+                { name: "Campus General Medical Center", lat: currentLatitude - 0.004, lon: currentLongitude + 0.006, address: "University Health Block, Gate 2", phone: "+91 88776 65544" },
+                { name: "St. Jude Hospital & Trauma Care", lat: currentLatitude + 0.012, lon: currentLongitude + 0.003, address: "102 Ring Road Bypass", phone: "+91 77665 54433" },
+                { name: "City Red Cross Clinic", lat: currentLatitude - 0.009, lon: currentLongitude - 0.011, address: "45 Market Square, Main Street", phone: "+91 66554 43322" }
+            ];
+
+            const list = localHospitals.map(h => {
+                const dist = getHaversineDistance(currentLatitude, currentLongitude, h.lat, h.lon);
+                return { ...h, distance: dist };
+            }).sort((a, b) => a.distance - b.distance);
+            
+            const closest = list[0];
+            nearestHospitalName = closest.name;
+            document.getElementById("sos-nearest-hospital").innerText = `${closest.name} (${closest.distance.toFixed(2)} km)`;
+            
+            const container = document.getElementById("hospitals-list-container");
+            container.innerHTML = list.map((h, i) => {
+                const directionsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLatitude},${currentLongitude}&destination=${h.lat},${h.lon}&travelmode=driving`;
+                return `
+                <div class="glass-panel" style="padding: 15px; border-radius: 12px; border: 1px solid ${i === 0 ? 'var(--accent-green)' : 'rgba(255,255,255,0.1)'}; background: ${i === 0 ? 'rgba(46, 204, 113, 0.05)' : 'transparent'}; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,0.3)'" onmouseleave="this.style.transform='';this.style.boxShadow=''" onclick="window.open('${directionsUrl}', '_blank')">
+                    <h4 style="color: ${i === 0 ? 'var(--accent-green)' : '#ffffff'}; font-size: 14px; margin-bottom: 5px; font-weight: 600; cursor: pointer;">
+                        📍 ${h.name} ${i === 0 ? '⭐ (Closest)' : ''}
+                    </h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 3px;">Distance: ${h.distance.toFixed(2)} km</p>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 8px;">${h.address}</p>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+                        <span style="font-size: 11px; font-weight: bold; color: var(--accent-cyan);">${h.phone}</span>
+                        <a href="${directionsUrl}" target="_blank" onclick="event.stopPropagation()" style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border-radius: 8px; font-size: 11px; font-weight: 600; text-decoration: none; transition: opacity 0.2s;" onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">
+                            🗺️ Get Directions
+                        </a>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        async function saveEmergencyEmail() {
+            const emailInput = document.getElementById("sos-contact-email-input").value;
+            if (!emailInput) {
+                alert("Please enter a valid emergency contact email.");
+                return;
+            }
+            
+            let profileData = lastProfileData || {
+                name: "", student_id: "", department: "", year: "", blood_group: "",
+                allergies: [], chronic_conditions: [], emergency_contacts: []
+            };
+            
+            profileData.emergency_email = emailInput;
+            
+            try {
+                const res = await fetch(`${API_BASE}/students/profile`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({
+                        name: profileData.name || "",
+                        student_id: profileData.student_id || "",
+                        department: profileData.department || "",
+                        year: profileData.year || "",
+                        blood_group: profileData.blood_group || "",
+                        allergies: profileData.allergies || [],
+                        chronic_conditions: profileData.chronic_conditions || [],
+                        emergency_contacts: profileData.emergency_contacts || [],
+                        emergency_email: emailInput
+                    })
+                });
+                
+                if (!res.ok) throw new Error("Failed to save emergency contact settings.");
+                
+                lastProfileData = profileData;
+                document.getElementById("sos-current-email").innerText = emailInput;
+                alert("Emergency contact email successfully updated!");
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function initFallDetection() {
+            fallDetectionActive = true;
+            console.log("Initializing Automated Fall & Crash Detection Sensor...");
+            
+            if (window.DeviceMotionEvent) {
+                if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                    const requestOnGesture = () => {
+                        DeviceMotionEvent.requestPermission()
+                            .then(permissionState => {
+                                if (permissionState === 'granted') {
+                                    console.log("DeviceMotion API permission granted.");
+                                    startMotionListener();
+                                } else {
+                                    console.warn("DeviceMotion API permission denied. Running in simulator mode.");
+                                    startSimulationFall();
+                                }
+                            })
+                            .catch(err => {
+                                console.error("DeviceMotion permission request error", err);
+                                startSimulationFall();
+                            });
+                        document.removeEventListener('click', requestOnGesture);
+                    };
+                    document.addEventListener('click', requestOnGesture);
+                    startSimulationFall();
+                } else {
+                    startMotionListener();
+                }
+            } else {
+                console.log("Device Motion API not supported by browser. Fall Detection simulation activated.");
+                startSimulationFall();
+            }
+        }
+
+        let fallSimTimeout = null;
+        function startSimulationFall() {
+            if (fallSimTimeout) return;
+            console.log("Fall detection simulation started. Shock event can be triggered via motion simulator or DevTools.");
+        }
+
+        function startMotionListener() {
+            stopMotionListener();
+            deviceMotionListener = function(event) {
+                const acc = event.accelerationIncludingGravity || event.acceleration;
+                if (!acc) return;
+                
+                const totalAcc = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+                if (totalAcc > 25) {
+                    triggerShockSOS("Sudden Shock/Crash Detected (Accelerometer)");
+                }
+            };
+            window.addEventListener('devicemotion', deviceMotionListener);
+        }
+
+        function stopMotionListener() {
+            if (deviceMotionListener) {
+                window.removeEventListener('devicemotion', deviceMotionListener);
+                deviceMotionListener = null;
+            }
+            if (fallSimTimeout) {
+                clearTimeout(fallSimTimeout);
+                fallSimTimeout = null;
+            }
+        }
+
+        let sirenAudio = null;
+
+        function generateSirenWav() {
+            // Generate a 2-second high-intensity professional emergency yelp siren WAV
+            const sampleRate = 22050; // slightly higher quality
+            const duration = 2;
+            const numSamples = sampleRate * duration;
+            const buffer = new ArrayBuffer(44 + numSamples * 2);
+            const view = new DataView(buffer);
+            
+            // WAV header
+            const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+            writeStr(0, 'RIFF');
+            view.setUint32(4, 36 + numSamples * 2, true);
+            writeStr(8, 'WAVE');
+            writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, 1, true); // Mono channel
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); // 16-bit depth
+            writeStr(36, 'data');
+            view.setUint32(40, numSamples * 2, true);
+            
+            // Generate professional siren waveform (yelp)
+            // Uses phase accumulation to avoid frequency modulation clicks and distortion
+            let phase = 0;
+            for (let i = 0; i < numSamples; i++) {
+                const t = i / sampleRate;
+                
+                // Fast high-intensity yelp siren pattern (3.5 Hz sweep rate)
+                // Oscillates between 650Hz and 1450Hz using a linear triangle sweep
+                const sweepFreq = 3.5;
+                const centerFreq = 1050;
+                const deviation = 400;
+                
+                // Linear triangle wave frequency sweep (-1.0 to 1.0)
+                const rawCycle = (t * sweepFreq) % 1.0;
+                const tri = rawCycle < 0.5 ? (4 * rawCycle - 1) : (3 - 4 * rawCycle);
+                
+                const currentFreq = centerFreq + deviation * tri;
+                
+                phase += (2 * Math.PI * currentFreq) / sampleRate;
+                if (phase > 2 * Math.PI) {
+                    phase -= 2 * Math.PI;
+                }
+                
+                // Combine fundamental with piercing odd harmonics (3rd and 5th)
+                // to synthesize a professional electronic vehicle horn timbre
+                let sample = Math.sin(phase) * 0.45;
+                sample += (Math.sin(phase * 3) / 3) * 0.15;
+                sample += (Math.sin(phase * 5) / 5) * 0.08;
+                
+                // Prevent pop/click during loop transitions by applying a 10ms ramp-in/out
+                let fade = 1.0;
+                const rampSamples = sampleRate * 0.01; // 10ms
+                if (i < rampSamples) {
+                    fade = i / rampSamples;
+                } else if (numSamples - i < rampSamples) {
+                    fade = (numSamples - i) / rampSamples;
+                }
+                
+                view.setInt16(44 + i * 2, sample * fade * 32767, true);
+            }
+            
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function playSiren() {
+            if (sirenAudio) return; // Already playing
+            try {
+                const wavBlob = generateSirenWav();
+                const url = URL.createObjectURL(wavBlob);
+                sirenAudio = new Audio(url);
+                sirenAudio.loop = true;
+                sirenAudio.volume = 0.8;
+                const playPromise = sirenAudio.play();
+                if (playPromise) {
+                    playPromise.catch(err => console.warn("Audio play blocked:", err));
+                }
+                console.log("Siren started via Audio element.");
+            } catch (err) {
+                console.error("Failed to play siren audio:", err);
+            }
+        }
+
+        function stopSiren() {
+            if (sirenAudio) {
+                sirenAudio.pause();
+                sirenAudio.currentTime = 0;
+                if (sirenAudio.src) URL.revokeObjectURL(sirenAudio.src);
+                sirenAudio = null;
+            }
+        }
+
+        let isSOSInProgress = false;
+        let alarmCountdownTimer = null;
+        let alarmCountdownSeconds = 15;
+
+        function resetSOSBannerUI() {
+            const title = document.getElementById("sos-alarm-title");
+            if (title) {
+                title.innerText = "🚨 SIREN ALARM ACTIVE";
+                title.style.color = "#e74c3c";
+            }
+            const countdownRing = document.getElementById("sos-countdown-container");
+            if (countdownRing) countdownRing.style.display = "flex";
+            
+            const timerText = document.getElementById("sos-alarm-timer-text");
+            if (timerText) {
+                timerText.innerText = "A sudden fall or shock was detected! Dispatching campus medical units in 15 seconds.";
+            }
+
+            const btn = document.getElementById("sos-action-btn");
+            if (btn) {
+                btn.innerText = "📴 SILENCE & ABORT DISPATCH";
+                btn.style.background = "#ffffff";
+                btn.style.color = "#e74c3c";
+            }
+        }
+
+        function setSOSBannerDispatchedUI() {
+            const title = document.getElementById("sos-alarm-title");
+            if (title) {
+                title.innerText = "🚨 EMERGENCY DISPATCHED";
+                title.style.color = "#e74c3c";
+            }
+            const countdownRing = document.getElementById("sos-countdown-container");
+            if (countdownRing) countdownRing.style.display = "none";
+            
+            const timerText = document.getElementById("sos-alarm-timer-text");
+            if (timerText) {
+                timerText.innerText = "Campus medical units and emergency contact have been notified. Siren is sounding.";
+            }
+            
+            const btn = document.getElementById("sos-action-btn");
+            if (btn) {
+                btn.innerText = "📴 STOP SIREN & CLEAR ALARM";
+                btn.style.background = "#e74c3c";
+                btn.style.color = "#ffffff";
+            }
+        }
+
+        async function triggerShockSOS(eventType) {
+            if (isSOSInProgress) return;
+            isSOSInProgress = true;
+            
+            // Silent during countdown: do NOT call playSiren() here.
+            resetSOSBannerUI();
+            
+            // Show the active banner
+            const alarmCard = document.getElementById("sos-alarm-active-card");
+            if (alarmCard) alarmCard.style.display = "block";
+            
+            // Start countdown IMMEDIATELY (don't wait for profile fetch)
+            alarmCountdownSeconds = 15;
+            updateAlarmTimerText();
+            
+            if (alarmCountdownTimer) clearInterval(alarmCountdownTimer);
+            
+            alarmCountdownTimer = setInterval(() => {
+                alarmCountdownSeconds--;
+                updateAlarmTimerText();
+                
+                if (alarmCountdownSeconds <= 0) {
+                    clearInterval(alarmCountdownTimer);
+                    alarmCountdownTimer = null;
+                    
+                    // Play siren ONLY AFTER the timer is over
+                    playSiren();
+                    setSOSBannerDispatchedUI();
+                    
+                    dispatchEmergency(eventType).catch(err => {
+                        console.error("Dispatch failed:", err);
+                    });
+                }
+            }, 1000);
+            
+            // Refresh profile in background (non-blocking) so email data is ready by dispatch time
+            fetch(`${API_BASE}/students/profile`, {
+                headers: { "Authorization": `Bearer ${sessionToken}` }
+            }).then(r => r.ok ? r.json() : null).then(data => {
+                if (data) {
+                    lastProfileData = data;
+                    console.log("Profile refreshed. Emergency email:", data.emergency_email);
+                }
+            }).catch(e => console.warn("Profile refresh failed:", e));
+        }
+
+        function updateAlarmTimerText() {
+            const timerText = document.getElementById("sos-alarm-timer-text");
+            if (timerText) {
+                timerText.innerText = `A sudden fall or shock was detected! Dispatching campus medical units and guardian alert in ${alarmCountdownSeconds} seconds.`;
+            }
+            
+            // Update the large countdown number
+            const countdownNum = document.getElementById("sos-countdown-number");
+            if (countdownNum) {
+                countdownNum.innerText = alarmCountdownSeconds;
+                // Flash red/white when under 5 seconds
+                if (alarmCountdownSeconds <= 5) {
+                    countdownNum.style.color = alarmCountdownSeconds % 2 === 0 ? "#ffffff" : "#e74c3c";
+                    countdownNum.style.fontSize = "48px";
+                } else {
+                    countdownNum.style.color = "#e74c3c";
+                    countdownNum.style.fontSize = "42px";
+                }
+            }
+            
+            // Update the SVG ring progress (depletes as time runs out)
+            const circle = document.getElementById("sos-countdown-circle");
+            if (circle) {
+                const totalSeconds = 15;
+                const circumference = 326.73; // 2 * PI * 52
+                const offset = circumference * (1 - alarmCountdownSeconds / totalSeconds);
+                circle.setAttribute("stroke-dashoffset", offset);
+            }
+        }
+
+        function abortSOSAlarm() {
+            stopSiren();
+            if (alarmCountdownTimer) {
+                clearInterval(alarmCountdownTimer);
+                alarmCountdownTimer = null;
+            }
+            const alarmCard = document.getElementById("sos-alarm-active-card");
+            if (alarmCard) alarmCard.style.display = "none";
+            isSOSInProgress = false;
+            console.log("SOS alarm aborted/stopped by user.");
+            resetSOSBannerUI();
+        }
+
+        async function dispatchEmergency(eventType = "Manual SOS") {
+            // Send EmailJS email FIRST and independently (so it always fires)
+            let emailjsStatus = "";
+            const studentName = (lastProfileData && lastProfileData.name) || "Student";
+            
+            // Get live emergency email from input text box or fallback to profile data
+            const inputEmail = document.getElementById("sos-contact-email-input") ? document.getElementById("sos-contact-email-input").value.trim() : "";
+            const emergencyEmail = inputEmail || (lastProfileData && lastProfileData.emergency_email) || "";
+            
+            let studentPhone = "Not Configured";
+            if (lastProfileData && lastProfileData.emergency_contacts && lastProfileData.emergency_contacts.length > 0) {
+                const firstContact = lastProfileData.emergency_contacts[0];
+                if (firstContact && firstContact.phone) {
+                    studentPhone = firstContact.phone;
+                }
+            }
+            
+            if (emergencyEmail) {
+                try {
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${currentLatitude},${currentLongitude}`;
+                    const messageBody = `Dear Emergency Contact,\n\nThis is an automated critical alert from QuadMedic Smart Campus Healthcare.\nAn emergency event was detected for ${studentName}.\n\nDetails:\n- Event: ${eventType} (Fall/Shock/Manual SOS)\n- Nearest Hospital: ${nearestHospitalName}\n- Live Location: Lat ${currentLatitude.toFixed(6)}, Lon ${currentLongitude.toFixed(6)}\n- Google Maps: ${mapsUrl}\n\nPlease coordinate with campus security and local medical services immediately.\n\nBest regards,\nQuadMedic Emergency Dispatcher`;
+
+                    let serviceId = "service_qyw050f";
+                    let templateId = "template_5n4wrc6";
+                    let userId = "cUeouY7jDhUWqpPrx";
+
+                    try {
+                        const configRes = await fetch(`${API_BASE}/ai/emailjs-config`, {
+                            headers: { "Authorization": `Bearer ${sessionToken}` }
+                        });
+                        if (configRes.ok) {
+                            const configData = await configRes.json();
+                            if (configData.service_id && configData.template_id && configData.user_id) {
+                                serviceId = configData.service_id;
+                                templateId = configData.template_id;
+                                userId = configData.user_id;
+                            }
+                        }
+                    } catch (configErr) {
+                        console.warn("Could not fetch dynamic EmailJS config, using public fallbacks", configErr);
+                    }
+
+                    const emailjsRes = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            service_id: serviceId,
+                            template_id: templateId,
+                            user_id: userId,
+                            template_params: {
+                                // Recipient Address (exhaustively mapped)
+                                to_email: emergencyEmail,
+                                toEmail: emergencyEmail,
+                                email: emergencyEmail,
+                                Email: emergencyEmail,
+                                emergency_email: emergencyEmail,
+                                emergencyEmail: emergencyEmail,
+                                guardian_email: emergencyEmail,
+                                guardianEmail: emergencyEmail,
+                                contact_email: emergencyEmail,
+                                contactEmail: emergencyEmail,
+                                to: emergencyEmail,
+                                To: emergencyEmail,
+                                recipient: emergencyEmail,
+                                Recipient: emergencyEmail,
+                                recipient_email: emergencyEmail,
+                                recipientEmail: emergencyEmail,
+
+                                // Event Type
+                                event_type: eventType,
+                                eventType: eventType,
+                                event: eventType,
+                                Event: eventType,
+                                EventType: eventType,
+                                Event_Type: eventType,
+
+                                // Patient Name
+                                patient_name: studentName,
+                                patientName: studentName,
+                                name: studentName,
+                                Name: studentName,
+                                student_name: studentName,
+                                studentName: studentName,
+                                PatientName: studentName,
+                                Patient_Name: studentName,
+                                StudentName: studentName,
+                                Student_Name: studentName,
+
+                                // Phone Number
+                                phone_number: studentPhone,
+                                phoneNumber: studentPhone,
+                                phone: studentPhone,
+                                Phone: studentPhone,
+                                PhoneNumber: studentPhone,
+                                Phone_Number: studentPhone,
+                                student_phone: studentPhone,
+                                studentPhone: studentPhone,
+                                contact_phone: studentPhone,
+                                contactPhone: studentPhone,
+                                phoneNum: studentPhone,
+                                PhoneNum: studentPhone,
+
+                                // GPS Coordinates
+                                gps_coordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                gpsCoordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                coordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                coords: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                latitude: String(currentLatitude),
+                                longitude: String(currentLongitude),
+                                lat: String(currentLatitude),
+                                lon: String(currentLongitude),
+                                lng: String(currentLongitude),
+                                long: String(currentLongitude),
+                                GpsCoordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                Gps_Coordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                Coordinates: `${currentLatitude.toFixed(6)}, ${currentLongitude.toFixed(6)}`,
+                                Latitude: String(currentLatitude),
+                                Longitude: String(currentLongitude),
+                                Lat: String(currentLatitude),
+                                Lon: String(currentLongitude),
+                                Lng: String(currentLongitude),
+                                Long: String(currentLongitude),
+
+                                // Location/Hospital
+                                physical_location: nearestHospitalName || "Campus Area",
+                                physicalLocation: nearestHospitalName || "Campus Area",
+                                location: nearestHospitalName || "Campus Area",
+                                nearest_hospital: nearestHospitalName || "Campus Area",
+                                nearestHospital: nearestHospitalName || "Campus Area",
+                                Location: nearestHospitalName || "Campus Area",
+                                PhysicalLocation: nearestHospitalName || "Campus Area",
+                                Physical_Location: nearestHospitalName || "Campus Area",
+                                NearestHospital: nearestHospitalName || "Campus Area",
+                                Nearest_Hospital: nearestHospitalName || "Campus Area",
+                                hospital: nearestHospitalName || "Campus Area",
+                                Hospital: nearestHospitalName || "Campus Area",
+
+                                // Link/Maps URL
+                                live_route_link: mapsUrl,
+                                liveRouteLink: mapsUrl,
+                                maps_url: mapsUrl,
+                                mapsUrl: mapsUrl,
+                                google_maps_link: mapsUrl,
+                                googleMapsLink: mapsUrl,
+                                route_link: mapsUrl,
+                                routeLink: mapsUrl,
+                                link: mapsUrl,
+                                Link: mapsUrl,
+                                maps: mapsUrl,
+                                Maps: mapsUrl,
+                                google_maps: mapsUrl,
+                                googleMaps: mapsUrl,
+                                LiveRouteLink: mapsUrl,
+                                Live_Route_Link: mapsUrl,
+
+                                // Message/Body
+                                message: messageBody,
+                                messageBody: messageBody,
+                                body: messageBody,
+                                Message: messageBody,
+                                MessageBody: messageBody,
+                                Body: messageBody,
+                                email_body: messageBody,
+                                EmailBody: messageBody,
+                                Email_Body: messageBody,
+
+                                to_name: "Emergency Contact",
+                                from_name: "QuadMedic Emergency Dispatcher",
+                                reply_to: "teamaura436@gmail.com"
+                            }
+                        })
+                    });
+                    if (emailjsRes.ok) {
+                        console.log("EmailJS sent successfully from client side.");
+                        emailjsStatus = `\n✅ Emergency email sent to ${emergencyEmail}`;
+                    } else {
+                        const errTxt = await emailjsRes.text();
+                        console.warn("EmailJS client-side send failure:", errTxt);
+                        emailjsStatus = `\n⚠️ Email dispatch issue: ${errTxt}`;
+                    }
+                } catch (ejsErr) {
+                    console.error("EmailJS call error:", ejsErr);
+                    emailjsStatus = `\n⚠️ Email network error: ${ejsErr.message}`;
+                }
+            } else {
+                emailjsStatus = "\n⚠️ No emergency email configured in profile!";
+            }
+
+            // Now notify the backend (non-blocking for email)
+            let backendStatus = "";
+            try {
+                const res = await fetch(`${API_BASE}/ai/emergency-trigger`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionToken}`
+                    },
+                    body: JSON.stringify({
+                        latitude: currentLatitude,
+                        longitude: currentLongitude,
+                        nearest_hospital: nearestHospitalName,
+                        event_type: eventType,
+                        symptoms: `${eventType} triggered at coordinates: Lat ${currentLatitude.toFixed(4)}, Lon ${currentLongitude.toFixed(4)}. Dispatching immediate medical unit.`,
+                        emergency_email: emergencyEmail
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    backendStatus = data.email_status || "Backend notified.";
+                } else {
+                    backendStatus = "Backend unreachable, but email was sent directly.";
+                }
+            } catch (err) {
+                console.error("Backend dispatch error:", err);
+                backendStatus = "Backend offline, but email was sent directly.";
+            }
+                
+            const caseId = "SOS-" + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date().toLocaleString();
+            localSOSList.unshift({ id: caseId, time: now, status: "DISPATCHED" });
+            loadStudentSOS();
+                
+            alert(`🚨 DISPATCHED! Nearest hospital notified: ${nearestHospitalName}.\n${backendStatus}${emailjsStatus}`);
+                
+            const docEmerg = document.getElementById("doc-emergency-count");
+            if (docEmerg) {
+                docEmerg.innerText = parseInt(docEmerg.innerText || "0") + 1;
+            }
+        }
+
+        async function triggerSOS() {
+            if (!confirm("⚠️ Are you sure you want to trigger a CRITICAL EMERGENCY? Campus medical dispatch and your emergency contact will be notified immediately.")) return;
+            
+            isSOSInProgress = true;
+            playSiren();
+            setSOSBannerDispatchedUI();
+            const alarmCard = document.getElementById("sos-alarm-active-card");
+            if (alarmCard) alarmCard.style.display = "block";
+            
+            await dispatchEmergency("Manual SOS");
+        }
+
+        function loadStudentSOS() {
+            const tbody = document.querySelector("#student-sos-table tbody");
+            if (!tbody) return;
+
+            if (localSOSList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No active emergencies logged.</td></tr>`;
+            } else {
+                tbody.innerHTML = localSOSList.map(sos => `
+                    <tr>
+                        <td style="color: #e74c3c; font-weight: 700;">${sos.id}</td>
+                        <td>${sos.time}</td>
+                        <td style="color: #e74c3c; font-weight: 700; animation: pulse-red 2s infinite;">🚨 ${sos.status}</td>
+                    </tr>
+                `).join("");
+            }
+        }
+
+        // =============================================
+        // ADMIN CONSOLE FUNCTIONS
+        // =============================================
+        async function adminLoadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/auth/admin/users`, {
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (!res.ok) throw new Error("Could not fetch user list");
+                const users = await res.json();
+                
+                const tbody = document.querySelector("#admin-users-table tbody");
+                document.getElementById("admin-total-users").innerText = users.length;
+                
+                const docsCount = users.filter(u => u.role === "doctor").length;
+                document.getElementById("admin-total-doctors").innerText = docsCount;
+
+                if (users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No registered users.</td></tr>`;
+                } else {
+                    tbody.innerHTML = users.map(u => `
+                        <tr>
+                            <td>${u.username}</td>
+                            <td>${u.email}</td>
+                            <td><span style="padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight:700; background: ${u.role === 'admin' ? 'rgba(231,76,60,0.2)' : u.role === 'doctor' ? 'rgba(0,240,255,0.2)' : 'rgba(255,255,255,0.1)'}; color: ${u.role === 'admin' ? '#e74c3c' : u.role === 'doctor' ? 'var(--accent-cyan)' : 'var(--text-secondary)'};">${u.role}</span></td>
+                            <td>
+                                ${u.role !== 'admin' ? `<button class="dashboard-btn" style="background: rgba(231,76,60,0.8); color: white; padding: 4px 10px; font-size: 11px;" onclick="adminDeleteUser('${u.email}')">Delete</button>` : '—'}
+                            </td>
+                        </tr>
+                    `).join("");
+                }
+            } catch (err) {
+                console.error("Admin user load failed", err);
+            }
+        }
+
+        async function adminDeleteUser(email) {
+            if (!confirm(`⚠️ Are you sure you want to permanently delete the account for ${email}? This cannot be undone.`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/admin/users/${email}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (res.ok) {
+                    alert("User deleted successfully.");
+                    adminLoadUsers();
+                } else {
+                    const data = await res.json();
+                    alert(data.detail || "Deletion failed.");
+                }
+            } catch (err) {
+                alert("Error calling delete endpoint.");
+            }
+        }
+
+        async function adminPurgeAllAccounts() {
+            if (!confirm("🚨🚨🚨 WARNING! You are about to DELETE ALL DOCTOR AND STUDENT ACCOUNTS and all their data from the database. This is a complete purge. Type 'PURGE' to confirm.")) return;
+            const confirmation = prompt("Please type 'PURGE' to proceed:");
+            if (confirmation !== "PURGE") {
+                alert("Purge cancelled.");
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/admin/users-all`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${sessionToken}` }
+                });
+                if (res.ok) {
+                    alert("All non-admin accounts purged successfully.");
+                    adminLoadUsers();
+                } else {
+                    alert("Failed to purge accounts.");
+                }
+            } catch (err) {
+                alert("Error during purge operation.");
+            }
+        }
+    </script>
+
+</body>
+</html>

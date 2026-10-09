@@ -1,0 +1,19 @@
+.env
+.firebase/
+__pycache__/
+*.pyc
+node_modules/
+.pytest_cache/
+.vscode/
+.idea/
+dist/
+build/
+*.egg-info/
+# OS files
+.DS_Store
+Thumbs.db
+*.wav
+
+# AI Assistant artifacts
+.agents/
+skills-lock.json

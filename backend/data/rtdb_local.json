@@ -1,0 +1,69 @@
+{
+  "users": {},
+  "students": {},
+  "doctors": {
+    "doc_smith": {
+      "_id": "doc_smith",
+      "email": "smith@quadmedic.edu",
+      "name": "Dr. Sarah Smith",
+      "specialty": "Cardiology & General Medicine",
+      "availability": [
+        "Monday",
+        "Tuesday",
+        "Wednesday"
+      ],
+      "slots": [
+        "09:00 - 10:00",
+        "10:00 - 11:00",
+        "14:00 - 15:00"
+      ],
+      "queue": []
+    },
+    "doc_davis": {
+      "_id": "doc_davis",
+      "email": "davis@quadmedic.edu",
+      "name": "Dr. Alan Davis",
+      "specialty": "Pediatrics & General Care",
+      "availability": [
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "slots": [
+        "10:00 - 11:00",
+        "11:00 - 12:00",
+        "15:00 - 16:00"
+      ],
+      "queue": []
+    },
+    "doc_jones": {
+      "_id": "doc_jones",
+      "email": "jones@quadmedic.edu",
+      "name": "Dr. Emily Jones",
+      "specialty": "Mental Wellness & Psychology",
+      "availability": [
+        "Monday",
+        "Thursday"
+      ],
+      "slots": [
+        "09:00 - 10:00",
+        "11:00 - 12:00",
+        "14:00 - 15:00"
+      ],
+      "queue": []
+    }
+  },
+  "appointments": {},
+  "prescriptions": {},
+  "vaccinations": {},
+  "medical_reports": {},
+  "symptoms": {},
+  "chat_history": {},
+  "notifications": {},
+  "medicine_reminders": {},
+  "emergency_cases": {},
+  "health_scores": {},
+  "otps": {},
+  "clinical_notes": {},
+  "emergency_emails": {}
+}

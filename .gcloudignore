@@ -1,0 +1,17 @@
+.gcloudignore
+.git
+.gitignore
+.firebase
+frontend/
+public/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+venv/
+.env
+*.wav
+*.pdf
+*.png
+*.jpg
+*.jpeg
